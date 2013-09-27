@@ -18,7 +18,7 @@
 confignicedir = $(sysconfdir)/build
 confignice_SCRIPTS=config.nice
 
-SUBDIRS = po config modules
+SUBDIRS = config
 
 EXTRA_DIST = UNINSTALL THANKS RELEASE-NOTES configure-tests.py config.nice.in \
              config.rpath
@@ -58,26 +58,23 @@ BOOTSTRAPV = 2.2.1
 # Hogan.js version
 HOGANVER = 2.0.0
 
-check-upgrade:
-	$(PYTHON) $(top_srcdir)/modules/miscutil/lib/inveniocfg_upgrader.py $(top_srcdir) --upgrade-check
-
 check-custom-templates:
 	$(PYTHON) $(top_srcdir)/modules/webstyle/lib/template.py --check-custom-templates $(top_srcdir)
 
 kwalitee-check:
-	@$(PYTHON) $(top_srcdir)/modules/miscutil/lib/kwalitee.py --stats $(top_srcdir)
+	@$(PYTHON) $(top_srcdir)/scripts/kwalitee.py --stats $(top_srcdir)
 
 kwalitee-check-errors-only:
-	@$(PYTHON) $(top_srcdir)/modules/miscutil/lib/kwalitee.py --check-errors $(top_srcdir)
+	@$(PYTHON) $(top_srcdir)/scripts/kwalitee.py --check-errors $(top_srcdir)
 
 kwalitee-check-variables:
-	@$(PYTHON) $(top_srcdir)/modules/miscutil/lib/kwalitee.py --check-variables $(top_srcdir)
+	@$(PYTHON) $(top_srcdir)/scripts/kwalitee.py --check-variables $(top_srcdir)
 
 kwalitee-check-indentation:
-	@$(PYTHON) $(top_srcdir)/modules/miscutil/lib/kwalitee.py --check-indentation $(top_srcdir)
+	@$(PYTHON) $(top_srcdir)/scripts/kwalitee.py --check-indentation $(top_srcdir)
 
 kwalitee-check-sql-queries:
-	@$(PYTHON) $(top_srcdir)/modules/miscutil/lib/kwalitee.py --check-sql $(top_srcdir)
+	@$(PYTHON) $(top_srcdir)/scripts/kwalitee.py --check-sql $(top_srcdir)
 
 etags:
 	\rm -f $(top_srcdir)/TAGS
@@ -165,16 +162,40 @@ install-jquery-plugins:
 	@echo "***********************************************************"
 	mkdir -p ${prefix}/var/www/js
 	mkdir -p $(prefix)/var/www/css
+	mkdir -p $(prefix)/var/www/img
 	(cd ${prefix}/var/www/js && \
 	wget http://code.jquery.com/jquery-1.7.1.min.js && \
 	mv jquery-1.7.1.min.js jquery.min.js && \
 	wget http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.17/jquery-ui.min.js && \
-        wget http://invenio-software.org/download/jquery/v1.5/js/jquery.jeditable.mini.js && \
+	wget http://invenio-software.org/download/jquery/v1.5/js/jquery.jeditable.mini.js && \
 	wget https://raw.github.com/malsup/form/master/jquery.form.js --no-check-certificate && \
 	wget http://jquery-multifile-plugin.googlecode.com/svn/trunk/jquery.MultiFile.pack.js && \
 	wget -O jquery.tablesorter.zip http://invenio-software.org/download/jquery/jquery.tablesorter.20111208.zip && \
 	wget http://invenio-software.org/download/jquery/uploadify-v2.1.4.zip -O uploadify.zip && \
 	wget http://www.datatables.net/download/build/jquery.dataTables.min.js && \
+	rm -rf /tmp/invenio-dt-bootstrap && \
+	mkdir /tmp/invenio-dt-bootstrap && \
+	(cd /tmp/invenio-dt-bootstrap && \
+	 git clone 'https://github.com/DataTables/Plugins.git' && \
+	 cp Plugins/integration/bootstrap/2/dataTables.bootstrap.css ${prefix}/var/www/css/dataTables.bootstrap.css && \
+	 cp Plugins/integration/bootstrap/2/dataTables.bootstrap.js ${prefix}/var/www/js/dataTables.bootstrap.js && \
+	 cp Plugins/integration/bootstrap/images/*.png ${prefix}/var/www/img/ && \
+	 ln -s ${prefix}/var/www/img/ ${prefix}/var/www/images) && \
+	rm -rf /tmp/invenio-dt-bootstrap/plugins && \
+	mkdir /tmp/invenio-dt-bootstrap/plugins && \
+	(cd /tmp/invenio-dt-bootstrap/plugins && \
+	 git clone 'https://github.com/DataTables/ColVis' && \
+	 cp ColVis/media/css/ColVis.css ${prefix}/var/www/css/ColVis.css && \
+	 cp ColVis/media/js/ColVis.js ${prefix}/var/www/js/ColVis.js && \
+	 cp ColVis/media/images/*.png ${prefix}/var/www/img/) && \
+	cd ${prefix}/var/www/js && \
+	rm -rf /tmp/invenio-dt-bootstrap/plugins && \
+	mkdir /tmp/invenio-dt-bootstrap/plugins && \
+	(cd /tmp/invenio-dt-bootstrap/plugins && \
+	 git clone 'https://github.com/LeaVerou/prism' && \
+	 cp prism/themes/prism.css ${prefix}/var/www/css/prism.css && \
+	 cp prism/prism.js ${prefix}/var/www/js/prism.js) && \
+	rm -rf /tmp/invenio-dt-bootstrap/plugins && \
 	wget http://invenio-software.org/download/jquery/jquery.bookmark.package-1.4.0.zip && \
 	unzip jquery.tablesorter.zip -d tablesorter && \
 	rm jquery.tablesorter.zip && \
@@ -261,7 +282,7 @@ install-ckeditor-plugin:
 	find ${prefix}/var/www/ckeditor/ckeditor* -maxdepth 0 ! -name "ckeditor.js" -exec rm -r {} \; && \
 	rm -fr /tmp/invenio-ckeditor-plugin
 	@echo "* Installing Invenio-specific CKeditor config..."
-	(cd $(top_srcdir)/modules/webstyle/etc && make install)
+	@echo "Ignored: (cd $(top_srcdir)/modules/webstyle/etc && make install)"
 	@echo "***********************************************************"
 	@echo "** The CKeditor plugin was successfully installed.      **"
 	@echo "** Please do not forget to properly set the option       **"
@@ -469,7 +490,7 @@ install-solrutils:
 	jar -cf invenio-solr.jar org/invenio_software/solr/*class
 
 update-v0.99.0-tables:
-	cat $(top_srcdir)/modules/miscutil/sql/tabcreate.sql | grep -v 'INSERT INTO upgrade' | ${prefix}/bin/dbexec
+	cat $(top_srcdir)/invenio/legacy/miscutil/sql/tabcreate.sql | grep -v 'INSERT INTO upgrade' | ${prefix}/bin/dbexec
 	echo "DROP TABLE IF EXISTS oaiREPOSITORY;" | ${prefix}/bin/dbexec
 	echo "ALTER TABLE bibdoc ADD COLUMN more_info mediumblob NULL default NULL;" | ${prefix}/bin/dbexec
 	echo "ALTER TABLE schTASK ADD COLUMN priority tinyint(4) NOT NULL default 0;" | ${prefix}/bin/dbexec
@@ -506,7 +527,7 @@ update-v0.99.7-tables:
 
 update-v0.99.8-tables: # from v0.99.8 to v1.0.0-rc0
 	echo "RENAME TABLE oaiARCHIVE TO oaiREPOSITORY;" | ${prefix}/bin/dbexec
-	cat $(top_srcdir)/modules/miscutil/sql/tabcreate.sql | grep -v 'INSERT INTO upgrade' | ${prefix}/bin/dbexec
+	cat $(top_srcdir)/invenio/legacy/miscutil/sql/tabcreate.sql | grep -v 'INSERT INTO upgrade' | ${prefix}/bin/dbexec
 	echo "INSERT INTO knwKB (id,name,description,kbtype) SELECT id,name,description,'' FROM fmtKNOWLEDGEBASES;" | ${prefix}/bin/dbexec
 	echo "INSERT INTO knwKBRVAL (id,m_key,m_value,id_knwKB) SELECT id,m_key,m_value,id_fmtKNOWLEDGEBASES FROM fmtKNOWLEDGEBASEMAPPINGS;" | ${prefix}/bin/dbexec
 	echo "ALTER TABLE sbmPARAMETERS CHANGE name name varchar(40) NOT NULL default '';" | ${prefix}/bin/dbexec
@@ -595,9 +616,9 @@ update-v0.99.8-tables: # from v0.99.8 to v1.0.0-rc0
 	echo "ALTER TABLE bskRECORDCOMMENT ADD reply_order_cached_data blob NULL default NULL;" | ${prefix}/bin/dbexec
 	echo "ALTER TABLE cmtRECORDCOMMENT ADD INDEX (reply_order_cached_data(40));" | ${prefix}/bin/dbexec
 	echo "ALTER TABLE bskRECORDCOMMENT ADD INDEX (reply_order_cached_data(40));" | ${prefix}/bin/dbexec
-	echo -e 'from invenio.webcommentadminlib import migrate_comments_populate_threads_index;\
+	echo -e 'from invenio.legacy.webcomment.adminlib import migrate_comments_populate_threads_index;\
 	migrate_comments_populate_threads_index()' | $(PYTHON)
-	echo -e 'from invenio.access_control_firerole import repair_role_definitions;\
+	echo -e 'from invenio.modules.access.firerole import repair_role_definitions;\
 	repair_role_definitions()' | $(PYTHON)
 
 CLEANFILES = *~ *.pyc *.tmp

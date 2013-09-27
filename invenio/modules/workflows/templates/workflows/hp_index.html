@@ -1,0 +1,23 @@
+{% extends "workflows/hp_layout.html" %}
+{% block hpbody %}
+
+	<h1>HoldingPen Overview</h1>
+		<div class="container">
+			<div class="span3">
+				<h4>Main Table</h4>
+				<div><a href="{{url_for('holdingpen.maintable')}}"><button class="btn btn-primary" type="button">Show Table</button></a></div>
+			</div>
+			<div class="span3">
+				<h4>Pending Tasks</h4>
+				{% for task in tasks.iterkeys() %}
+					<div class="task-btns"><a href="{{url_for('holdingpen.maintable')}}"><button class="btn btn-warning" type="button">{{task}}: {{tasks[task][0]}}</button></a></br></div>
+				{% endfor %}
+			</div>
+			<div class="span3">
+				<h4>Assigned to me</h4>
+				<div><a href="{{url_for('holdingpen.maintable')}}"><button class="btn btn-primary" type="button">Show Records</button></a></div>
+			</div>
+		</div>
+		
+
+{% endblock %}
