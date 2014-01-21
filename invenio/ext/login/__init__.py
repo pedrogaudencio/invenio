@@ -71,6 +71,45 @@ def reset_password(email, ln=None):
     return True  # password reset email send successfully
 
 
+def authenticate(nickname_or_email=None, password=None,
+                 login_method='Local'):
+    """
+    Finds user identified by given information and login method.
+
+    :param nickname_or_email: User nickname or email address
+    :param password: Password used only in login methods that need it
+    :param login_method: Login method (default: 'Local')
+    :return: UserInfo
+    """
+
+    from invenio.base.i18n import _
+    from invenio.ext.sqlalchemy import db
+    from invenio.modules.accounts.models import User
+
+    where = [db.or_(User.nickname == nickname_or_email,
+                    User.email == nickname_or_email)]
+    if login_method == 'Local' and password is not None:
+        where.append(User.password == password)
+    try:
+        user = User.query.filter(*where).one()
+    except:
+        return None
+
+    if user.settings['login_method'] != login_method:
+        flash(
+            _("You are not authorized to use '%(x_login_method)s' login method.",
+              x_login_method=login_method), 'error')
+        return None
+
+    if user.note == '2':  # account is not confirmed
+        logout_user()
+        flash(_("You have not yet confirmed the email address for the \
+            '%(login_method)s' authentication method.",
+            login_method=login_method), 'warning')
+
+    return login_user(user.id)
+
+
 def setup_app(app):
     """Setup login extension."""
 
