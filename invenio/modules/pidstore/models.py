@@ -18,45 +18,45 @@
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 """
-    invenio.modules.pid_store.models
-    --------------------------------
+invenio.modules.pid_store.models
+--------------------------------
 
-    PersistentIdentifier store and registration.
+PersistentIdentifier store and registration.
 
-    Usage example for registering new identifiers::
+Usage example for registering new identifiers::
 
-        from invenio.pidstore_model import PersistentIdentifier
+    from invenio.pidstore_model import PersistentIdentifier
 
-        # Reserve a new DOI internally first
-        pid = PersistentIdentifier.create('doi','10.0572/1234')
+    # Reserve a new DOI internally first
+    pid = PersistentIdentifier.create('doi','10.0572/1234')
 
-        # Get an already reserved DOI
-        pid = PersistentIdentifier.get('doi', '10.0572/1234')
+    # Get an already reserved DOI
+    pid = PersistentIdentifier.get('doi', '10.0572/1234')
 
-        # Assign it to a record.
-        pid.assign('rec', 1234)
+    # Assign it to a record.
+    pid.assign('rec', 1234)
 
-        url = "http://www.zenodo.org/record/1234"
-        doc = "<resource ...."
+    url = "http://www.zenodo.org/record/1234"
+    doc = "<resource ...."
 
-        # Pre-reserve the DOI in DataCite
-        pid.reserve(doc=doc)
+    # Pre-reserve the DOI in DataCite
+    pid.reserve(doc=doc)
 
-        # Register the DOI (note parameters depended on the provider and pid type)
-        pid.register(url=url, doc=doc)
+    # Register the DOI (note parameters depended on the provider and pid type)
+    pid.register(url=url, doc=doc)
 
-        # Reassign DOI to new record
-        pid.assign('rec', 5678, overwrite=True),
+    # Reassign DOI to new record
+    pid.assign('rec', 5678, overwrite=True),
 
-        # Update provider with new information
-        pid.update(url=url, doc=doc)
+    # Update provider with new information
+    pid.update(url=url, doc=doc)
 
-        # Delete the DOI (you shouldn't be doing this ;-)
-        pid.delete()
+    # Delete the DOI (you shouldn't be doing this ;-)
+    pid.delete()
 """
 
 from datetime import datetime
-from sqlalchemy.ext import SQLAlchemyError
+from sqlalchemy.exc import SQLAlchemyError
 
 from invenio.base.globals import cfg
 from invenio.ext.sqlalchemy import db
