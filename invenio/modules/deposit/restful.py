@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 ##
 ## This file is part of Invenio.
-## Copyright (C) 2013 CERN.
+## Copyright (C) 2013, 2014 CERN.
 ##
 ## Invenio is free software; you can redistribute it and/or
 ## modify it under the terms of the GNU General Public License as
@@ -17,24 +17,22 @@
 ## along with Invenio; if not, write to the Free Software Foundation, Inc.,
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
-from werkzeug.utils import secure_filename
+from flask import request
 from flask.ext.restful import Resource, abort, marshal_with, fields, \
     reqparse
+from flask.ext.login import current_user
 from flask.ext.restful.utils import unpack
-from invenio.ext.restful import require_api_auth, error_codes
-
-from flask import request
 from functools import wraps
-from invenio.webdeposit_models import Deposition, DepositionType, \
+from werkzeug.utils import secure_filename
+
+from invenio.ext.restful import api, require_api_auth, error_codes
+from invenio.modules.deposit.models import Deposition, DepositionType, \
     DepositionFile, InvalidDepositionType, DepositionDoesNotExists, \
     DraftDoesNotExists, FormDoesNotExists, DepositionNotDeletable, \
     DepositionDraftCacheManager, InvalidApiAction, FilenameAlreadyExists, \
     FileDoesNotExists, ForbiddenAction, DepositionError
-from invenio.webdeposit_storage import ChunkedDepositionStorage, \
+from invenio.modules.deposit.storage import \
     DepositionStorage, ExternalFile, UploadError
-from invenio.webinterface_handler_flask_utils import InvenioBlueprint
-from invenio.webdeposit_models import Deposition
-from invenio.webuser_flask import current_user
 
 from cerberus import Validator
 
@@ -593,7 +591,7 @@ class DepositionFileResource(Resource):
 #
 # Register API resources
 #
-def register_restapi(app, api):
+def setup_app(app):
     api.add_resource(
         DepositionListResource,
         '/api/deposit/depositions/',
