@@ -313,6 +313,7 @@ class DynamicFieldList(FieldList):
         Adapted from wtforms.FieldList to allow merging content
         formdata and draft data properly.
         """
+        self.process_errors = []
         self.entries = []
         if data is _unset_value or not data:
             try:
