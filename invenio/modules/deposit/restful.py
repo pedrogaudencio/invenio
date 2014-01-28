@@ -21,7 +21,7 @@ from werkzeug.utils import secure_filename
 from flask.ext.restful import Resource, abort, marshal_with, fields, \
     reqparse
 from flask.ext.restful.utils import unpack
-from invenio.restapi import require_api_auth, error_codes
+from invenio.ext.restful import require_api_auth, error_codes
 
 from flask import request
 from functools import wraps

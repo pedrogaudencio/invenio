@@ -18,8 +18,8 @@
 # 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 
-from invenio.bibfield_jsonreader import JsonReader
-from invenio.webdeposit_models import DepositionDraft
+from invenio.modules.jsonalchemy.jsonext.readers.json_reader import JsonReader
+from .models import DepositionDraft
 
 
 def record_to_draft(record, draft=None, form_class=None, pre_process=None,

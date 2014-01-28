@@ -35,7 +35,7 @@ from flask import redirect, render_template, flash, url_for, request, \
     session
 from flask.ext.login import current_user
 from flask.ext.restful import fields, marshal
-from invenio.restapi import UTCISODateTime
+from invenio.ext.restful import UTCISODateTime
 
 from invenio.ext.sqlalchemy import db
 from invenio.modules.workflows.config import CFG_OBJECT_VERSION, CFG_WORKFLOW_STATUS
