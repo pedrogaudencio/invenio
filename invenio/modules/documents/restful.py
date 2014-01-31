@@ -255,4 +255,3 @@ def setup_app(app, api):
         DocumentFileResource,
         '/api/document/<string:document_uuid>',
     )
-    print 'setuped', app, api

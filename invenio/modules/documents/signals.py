@@ -44,3 +44,9 @@ document_after_content_set = _signals.signal(
 """
 This signal is send right after data are written to the document.
 """
+
+document_before_file_delete = _signals.signal(
+    'document-before-file-delete')
+"""
+This signal is send right before data are deleted from filesystem.
+"""
