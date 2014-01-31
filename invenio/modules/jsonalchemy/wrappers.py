@@ -131,19 +131,19 @@ class SmartJson(SmartDict):
 
         if self._validator is None:
             schema = {}
-            model_fields = ModelParser.model_definitions(self['__meta_metadata__']['__additional_info__']['namespace']).get(fields, {})
+            model_fields = ModelParser.model_definitions(self['__meta_metadata__']['__additional_info__']['namespace']).get('fields', {})
             if model_fields:
                 for field in self.document.keys():
                     if field not in model_fields:
                         model_fields[field] = field
-                model_field = [json_id for json_id in model_fields.values()]
+                model_fields = model_fields.values()
             else:
                 model_fields = self.document.keys()
 
             for json_id in model_fields:
                 for schema in find_schema(json_id):
                     self.schema.update(schema)
-            self._validator = Validator(schema=shema)
+            self._validator = Validator(schema=schema)
 
         return self._validator.validate(self)
 
@@ -186,8 +186,8 @@ class SmartJson(SmartDict):
                 func = reduce(lambda obj, key: obj[key], \
                     self._dict['__meta_metadata__'][field]['function'], \
                     FieldParser.field_definitions(self['__meta_metadata__']['__additional_info__']['namespace']))
-                self._dict_bson[field] = try_to_eval(func, 
-                        functions(self['__meta_metadata__']['__additional_info__']['namespace']), 
+                self._dict_bson[field] = try_to_eval(func,
+                        functions(self['__meta_metadata__']['__additional_info__']['namespace']),
                         self=self)
                 if not old_value == self._dict_bson[field]:
                     #FIXME: trigger update in DB and fire signal to update others
