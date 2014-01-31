@@ -17,18 +17,61 @@
 ## along with Invenio; if not, write to the Free Software Foundation, Inc.,
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
+import six
+
+from fs.opener import opener
+
 from invenio.modules.jsonalchemy.wrappers import SmartJson
 from invenio.modules.jsonalchemy.jsonext.engines.sqlalchemy import SQLAlchemyStorage
 from invenio.modules.jsonalchemy.jsonext.readers.json_reader import reader
 
+from . import signals
 from .models import Document as DocumentModel
 
-
 class Document(SmartJson):
+    """
+    Document
+    """
     storage_engine = SQLAlchemyStorage(DocumentModel)
 
     @classmethod
-    def create(cls, data, model='common_document'):
+    def create(cls, data, model='base'):
         record = reader(data, namespace='documentext', model=model)
         document = cls(record.translate())
-        return cls.storage_engine.save_one(document.dumps())
+        cls.storage_engine.save_one(document.dumps())
+
+        signals.document_created(document)
+
+        return document
+
+    @classmethod
+    def get_document(cls, uuid):
+        return cls(cls.storage_engine.get_one(uuid))
+
+    def _save(self):
+        self.storage_engine.update_one(self.dumps(), id=self['_id'])
+
+    def set_content(self, stream, name=None):
+        """
+        Writes content of the `stream` to document object.
+
+        :param stream: Source data
+        :param name: File URI or filename generator taking `self` as argument.
+        """
+
+        if name is None:
+            name = str(stream)
+        elif callable(name):
+            name = name(self)
+
+        signals.document_before_content_set(self, name)
+
+        with opener.open(name, 'w') as f:
+            if isinstance(stream, six.text_type):
+                f.write(stream)
+            else:
+                f.write(stream.read())
+            signals.document_after_content_set(self, name)
+
+        self['uri'] = name
+        self._save()

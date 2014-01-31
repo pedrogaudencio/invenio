@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 ##
 ## This file is part of Invenio.
-## Copyright (C) 2013, 2014 CERN.
+## Copyright (C) 2014 CERN.
 ##
 ## Invenio is free software; you can redistribute it and/or
 ## modify it under the terms of the GNU General Public License as
@@ -18,17 +18,29 @@
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 """
-Common fields in all the documents inside any Invenio installation.
+    invenio.modules.documents.signal
+    --------------------------------
+
+    Defines signals used in document API.
 """
 
-fields:
-    _id = uuid
-    version
-    source
-    uri
-    restriction
-    parent
-    parent_uuid
-    creation_date
-    modification_date
+from blinker import Namespace
+_signals = Namespace()
 
+document_created = _signals.signal(
+    'document_created')
+"""
+This signal is sent right after the document is created.
+"""
+
+document_before_content_set = _signals.signal(
+    'document-before-content-set')
+"""
+This signal is send right before data are written to the document.
+"""
+
+document_after_content_set = _signals.signal(
+    'document-after-content-set')
+"""
+This signal is send right after data are written to the document.
+"""
