@@ -87,7 +87,7 @@ def get_cache(taxonomy_id):
         to update the cache!
     """
     # Because of a standalone mode, we don't use the
-    # invenio.data_cacher.DataCacher, but it has no effect
+    # invenio.utils.data_cacher.DataCacher, but it has no effect
     # on proper functionality.
 
     if _CACHE.has_key(taxonomy_id):
@@ -142,8 +142,7 @@ def get_regular_expressions(taxonomy_name, rebuild=False, no_cache=False):
         if os.access(onto_path, os.R_OK):
             if rebuild or no_cache:
                 log.debug("Cache generation was manually forced.")
-                if os.access(onto_path, os.R_OK):
-                    return _build_cache(onto_path, skip_cache=no_cache)
+                return _build_cache(onto_path, skip_cache=no_cache)
         else:
             # ontology file not found. Use the cache instead.
             log.warning("The ontology couldn't be located. However "
@@ -259,43 +258,39 @@ def _discover_ontology(ontology_name):
     @return: absolute path of a file if found, or None
     """
     last_part = os.path.split(os.path.abspath(ontology_name))[1].lower()
-    if last_part in taxonomies:
-        return taxonomies.get(last_part)
-    elif last_part + ".rdf" in taxonomies:
-        return taxonomies.get(last_part+".rdf")
-    else:
-        log.debug("No taxonomy with pattern '%s' found" % ontology_name)
-    #FIXME: review
-    # places = [config.CFG_CACHEDIR,
-    #           config.CFG_ETCDIR,
-    #           os.path.join(config.CFG_CACHEDIR, "bibclassify"),
-    #           os.path.join(config.CFG_ETCDIR, "bibclassify"),
-    #           os.path.abspath('.'),
-    #           os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../etc/bibclassify")),
-    #           os.path.join(os.path.dirname(__file__), "bibclassify"),
-    #           config.CFG_WEBDIR ]
+    possible_patterns = [last_part]
+    if not last_part.endswith('.rdf'):
+        possible_patterns.append(last_part + '.rdf')
+    places = [config.CFG_CACHEDIR,
+              config.CFG_ETCDIR,
+              os.path.join(config.CFG_CACHEDIR, "bibclassify"),
+              os.path.join(config.CFG_ETCDIR, "bibclassify"),
+              os.path.abspath('.'),
+              os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../etc/bibclassify")),
+              os.path.join(os.path.dirname(__file__), "bibclassify"),
+              config.CFG_WEBDIR]
 
-    # log.debug("Searching for taxonomy using string: %s" % last_part)
-    # log.debug("Possible patterns: %s" % possible_patterns)
-    # for path in places:
+    log.debug("Searching for taxonomy using string: %s" % last_part)
+    log.debug("Possible patterns: %s" % possible_patterns)
+    for path in places:
 
-    #     try:
-    #         if os.path.isdir(path):
-    #             log.debug("Listing: %s" % path)
-    #             for filename in os.listdir(path):
-    #                 #log.debug('Testing: %s' % filename)
-    #                 for pattern in possible_patterns:
-    #                     filename_lc = filename.lower()
-    #                     if pattern == filename_lc and os.path.exists(os.path.join(path, filename)):
-    #                         filepath = os.path.abspath(os.path.join(path, filename))
-    #                         if (os.access(filepath, os.R_OK)):
-    #                             log.debug("Found taxonomy at: %s" % filepath)
-    #                             return filepath
-    #                         else:
-    #                             log.warning('Found taxonony at: %s, but it is not readable. Continue searching...' % filepath)
-    #     except OSError, os_error_msg:
-    #         log.warning('OS Error when listing path "%s": %s' % (str(path), str(os_error_msg)))
-    # log.debug("No taxonomy with pattern '%s' found" % ontology_name)
+        try:
+            if os.path.isdir(path):
+                log.debug("Listing: %s" % path)
+                for filename in os.listdir(path):
+                    #log.debug('Testing: %s' % filename)
+                    for pattern in possible_patterns:
+                        filename_lc = filename.lower()
+                        if pattern == filename_lc and os.path.exists(os.path.join(path, filename)):
+                            filepath = os.path.abspath(os.path.join(path, filename))
+                            if (os.access(filepath, os.R_OK)):
+                                log.debug("Found taxonomy at: %s" % filepath)
+                                return filepath
+                            else:
+                                log.warning('Found taxonony at: %s, but it is not readable. Continue searching...' % filepath)
+        except OSError, os_error_msg:
+            log.warning('OS Error when listing path "%s": %s' % (str(path), str(os_error_msg)))
+    log.debug("No taxonomy with pattern '%s' found" % ontology_name)
 
 
 class KeywordToken:
@@ -547,10 +542,9 @@ def _build_cache(source_file, skip_cache=False):
 
     try:
         if not rdflib:
-            raise ImportError() # will be caught below
+            import rdflib as rdflib_reimport
 
         log.info("Building RDFLib's conjunctive graph from: %s" % source_file)
-
         try:
             store.parse(source_file)
         except urllib2.URLError, exc:
@@ -565,7 +559,7 @@ def _build_cache(source_file, skip_cache=False):
         log.error(traceback.format_exc())
         raise rdflib.exceptions.Error(e)
 
-    except (xml.sax.SAXParseException, ImportError), e:
+    except xml.sax.SAXParseException, e:
         # File is not a RDF file. We assume it is a controlled vocabulary.
         log.error(e)
         log.error("The ontology file is probably not a valid RDF file. \

@@ -452,6 +452,7 @@ def change_output_format_code(old_code, new_code):
 def get_preformatted_record(recID, of, decompress=zlib.decompress):
     """
     Returns the preformatted record with id 'recID' and format 'of'
+    and whether we need a 2nd pass.
 
     If corresponding record does not exist for given output format,
     returns None
@@ -463,15 +464,15 @@ def get_preformatted_record(recID, of, decompress=zlib.decompress):
     :return: formatted record as String, or None if not exist
     """
     try:
-        value = Bibfmt.query\
+        fmt = Bibfmt.query\
             .filter(Bibfmt.id_bibrec == recID)\
             .filter(Bibfmt.format == of)\
-            .one().value
+            .one()
 
-        return str(decompress(value))
+        return str(decompress(fmt.value)), fmt.needs_2nd_pass
 
     except SQLAlchemyError:
-        return None
+        return None, None
     # Decide whether to use DB slave:
     # if of in ('xm', 'recstruct'):
     #     run_on_slave = False # for master formats, use DB master
@@ -501,6 +502,16 @@ def get_preformatted_record_date(recID, of):
 
     except SQLAlchemyError:
         return None
+
+
+def save_preformatted_record(recID, of, res, needs_2nd_pass=False,
+                             low_priority=False, compress=zlib.compress):
+    start_date = time.strftime('%Y-%m-%d %H:%M:%S')
+    formatted_record = compress(res)
+    fmt = Bibfmt(id_bibrec=recID, format=of, last_updated=start_date,
+                 value=formatted_record, needs_2nd_pass=needs_2nd_pass)
+    db.session.merge(fmt)
+    db.session.commit()
 
 ## def keep_formats_in_db(output_formats):
 ##     """

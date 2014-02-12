@@ -20,6 +20,8 @@
 """Unit tests for search views."""
 
 from flask import url_for, current_app
+from intbitset import intbitset
+
 from invenio.testsuite import InvenioTestCase, make_test_suite, \
     run_test_suite
 
@@ -40,7 +42,23 @@ class SearchViewTest(InvenioTestCase):
         self.assert200(response)
 
 
-TEST_SUITE = make_test_suite(SearchViewTest)
+class WebSearchSummarizerTests(InvenioTestCase):
+    """Test utility functions for search engine summarizer."""
+
+    def test_basic(self):
+        from invenio.search_engine_summarizer import summarize_records
+        summarize_records(intbitset(range(1, 100)), 'hcs', 'en')
+
+    def test_extended(self):
+        from invenio.search_engine_summarizer import summarize_records
+        summarize_records(intbitset(range(1, 100)), 'hcs2', 'en')
+
+    def test_xml(self):
+        from invenio.search_engine_summarizer import summarize_records
+        summarize_records(intbitset(range(1, 100)), 'xcs', 'en')
+
+
+TEST_SUITE = make_test_suite(SearchViewTest, WebSearchSummarizerTests)
 
 if __name__ == "__main__":
     run_test_suite(TEST_SUITE)

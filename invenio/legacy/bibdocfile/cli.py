@@ -51,6 +51,7 @@ from invenio.legacy.dbquery import run_sql
 from invenio.legacy.bibsched.bibtask import task_low_level_submission
 from invenio.utils.text import encode_for_xml
 from invenio.legacy.websubmit.file_converter import can_perform_ocr
+from invenio.utils.shell import retry_mkstemp
 
 def _xml_mksubfield(key, subfield, fft):
     return fft.get(key, None) is not None and '\t\t<subfield code="%s">%s</subfield>\n' % (subfield, encode_for_xml(str(fft[key]))) or ''
@@ -587,7 +588,9 @@ def bibupload_ffts(ffts, append=False, do_debug=False, interactive=True):
     if xml:
         if interactive:
             print xml
-        tmp_file_fd, tmp_file_name = mkstemp(suffix='.xml', prefix="bibdocfile_%s" % time.strftime("%Y-%m-%d_%H:%M:%S"), dir=CFG_TMPSHAREDDIR)
+        tmp_file_fd, tmp_file_name = retry_mkstemp(suffix='.xml',
+                                                   prefix="bibdocfile_%s" % time.strftime("%Y-%m-%d_%H:%M:%S"),
+                                                   directory=CFG_TMPSHAREDDIR)
         os.write(tmp_file_fd, xml)
         os.close(tmp_file_fd)
         os.chmod(tmp_file_name, 0644)
@@ -910,14 +913,13 @@ def cli_delete(options):
         docname = None
         recid = None
         # retrieve the 1st recid
-        if recid.bibrec_links:
+        if bibdoc.bibrec_links:
             recid = bibdoc.bibrec_links[0]["recid"]
             docname = bibdoc.bibrec_links[0]["docname"]
-
-        if recid not in ffts:
-            ffts[recid] = [{'docname' : docname, 'doctype' : 'DELETE'}]
-        else:
-            ffts[recid].append({'docname' : docname, 'doctype' : 'DELETE'})
+            ffts.setdefault(recid, []).append(
+                {'docname' : docname,
+                 'doctype' : 'DELETE'}
+            )
     return bibupload_ffts(ffts)
 
 def cli_delete_file(options):

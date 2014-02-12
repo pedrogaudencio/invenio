@@ -51,6 +51,7 @@ from invenio.legacy.bibcirculation.db_layer import get_id_bibrec, \
     get_borrower_data
 from invenio.legacy.websearch.webcoll import CFG_CACHE_LAST_UPDATED_TIMESTAMP_FILE
 from invenio.utils.date import convert_datetext_to_datestruct, convert_datestruct_to_dategui
+from invenio.legacy.bibtask import get_modified_records_since
 
 
 WEBSTAT_SESSION_LENGTH = 48 * 60 * 60 # seconds
@@ -1428,8 +1429,7 @@ def get_list_link(process, category=None):
         file_coll_last_update = open(CFG_CACHE_LAST_UPDATED_TIMESTAMP_FILE, 'r')
         coll_last_update = file_coll_last_update.read()
         file_coll_last_update.close()
-        list_registers = run_sql('SELECT id FROM bibrec WHERE \
-                                modification_date > %s', (coll_last_update,))
+        list_registers = get_modified_records_since(coll_last_update)
 
     # build the link
     if list_registers == ():

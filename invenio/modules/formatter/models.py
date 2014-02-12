@@ -126,9 +126,6 @@ class Formatname(db.Model):
 class Bibfmt(db.Model):
     """Represents a Bibfmt record."""
 
-    def __init__(self):
-        pass
-
     __tablename__ = 'bibfmt'
 
     id_bibrec = db.Column(
@@ -153,6 +150,8 @@ class Bibfmt(db.Model):
         index=True)
 
     value = db.Column(db.iLargeBinary)
+
+    needs_2nd_pass = db.Column(db.Boolean, server_default=False)
 
     bibrec = db.relationship(Bibrec, backref='bibfmt')
 

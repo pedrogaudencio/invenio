@@ -99,15 +99,23 @@ def register_emergency(msg, recipients=None):
     CFG_SITE_EMERGENCY_EMAIL_ADDRESSES
     """
     from invenio.ext.email import send_email
+    from socket import gethostname
     if not recipients:
         recipients = get_emergency_recipients()
     recipients = set(recipients)
     recipients.add(cfg['CFG_SITE_ADMIN_EMAIL'])
+    mail_subject = "Emergency notification from " + gethostname() + " at " + CFG_SITE_URL
+    sms_subject = "ALERT"
     for address_str in recipients:
-        send_email(cfg['CFG_SITE_SUPPORT_EMAIL'], address_str, "Emergency notification", msg)
+        if "sms" in address_str:
+            # Probably an SMS, lets reduce things!
+            subject = sms_subject
+        else:
+            subject = mail_subject
+        send_email(cfg['CFG_SITE_SUPPORT_EMAIL'], address_str, subject, msg)
 
 
-def get_emergency_recipients(recipient_cfg=None):
+def get_emergency_recipients(recipient_cfg=None, now=None):
     """Parse a list of appropriate emergency email recipients from
     CFG_SITE_EMERGENCY_EMAIL_ADDRESSES, or from a provided dictionary
     comprised of 'time constraint' => 'comma separated list of addresses'
@@ -125,14 +133,18 @@ def get_emergency_recipients(recipient_cfg=None):
     if recipient_cfg is None:
         recipient_cfg = cfg['CFG_SITE_EMERGENCY_EMAIL_ADDRESSES']
 
+    if now is None:
+        now = datetime.datetime.now()
+
     recipients = set()
     for time_condition, address_str in recipient_cfg.items():
         if time_condition and time_condition is not '*':
-            (current_range, future_range) = parse_runtime_limit(time_condition)
-            if not current_range[0] <= datetime.datetime.now() <= current_range[1]:
+            current_range, dummy_range = parse_runtime_limit(time_condition,
+                                                             now=now)
+            if not current_range[0] <= now <= current_range[1]:
                 continue
 
-        recipients.update([address_str])
+        recipients.add(address_str)
     return list(recipients)
 
 
@@ -304,7 +316,8 @@ def register_exception(stream='error',
 
     @return: 1 if successfully wrote to stream, 0 if not
     """
-
+    if cfg['CFG_PROPAGATE_EXCEPTIONS']:
+        raise
 
     try:
         ## Let's extract exception information

@@ -16,6 +16,7 @@
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 import time
+import zlib
 from invenio.legacy.dbquery import run_sql
 from invenio.utils.serializers import serialize_via_marshal
 from invenio.legacy.bibrecord import create_records, record_extract_oai_id
@@ -48,6 +49,34 @@ class HistoryEntry:
                "bibupload_task_id: " + str(self.bibupload_task_id) + ', ' + \
                "inserted_to_db: " + str(self.inserted_to_db) + ', ' + \
                "oai_src_id: " + str(self.oai_src_id) + ', ' + ")"
+
+
+def update_lastrun(index, runtime=None):
+    """ A method that updates the lastrun of a repository
+        successfully harvested """
+    try:
+        if not runtime:
+            runtime = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+        sql = 'UPDATE oaiHARVEST SET lastrun=%s WHERE id=%s'
+        run_sql(sql, (runtime, index))
+        return 1
+    except StandardError, e:
+        return (0, e)
+
+
+def create_oaiharvest_log_str(task_id, oai_src_id, xml_content):
+    """
+    Function which creates the harvesting logs
+    @param task_id bibupload task id
+    """
+    try:
+        records = create_records(xml_content)
+        for record in records:
+            oai_id = record_extract_oai_id(record[0])
+            query = "INSERT INTO oaiHARVESTLOG (id_oaiHARVEST, oai_id, date_harvested, bibupload_task_id) VALUES (%s, %s, NOW(), %s)"
+            run_sql(query, (str(oai_src_id), str(oai_id), str(task_id)))
+    except Exception, msg:
+        print "Logging exception : %s   " % (str(msg),)
 
 
 def get_history_entries_raw(query_suffix, sqlparameters):
@@ -324,7 +353,13 @@ def get_holdingpen_entries(start = 0, limit = 0):
 
 def get_holdingpen_entry(oai_id, date_inserted):
     query = "SELECT changeset_xml FROM bibHOLDINGPEN WHERE changeset_date = %s AND oai_id = %s"
-    return run_sql(query, (str(date_inserted), str(oai_id)))[0][0]
+    changeset_xml = run_sql(query, (str(date_inserted), str(oai_id)))[0][0]
+    try:
+        changeset_xml = zlib.decompress(changeset_xml)
+    except zlib.error:
+        # Legacy: the xml can be in TEXT format, leave it unchanged
+        pass
+    return changeset_xml
 
 
 def delete_holdingpen_entry(hpupdate_id):
@@ -397,31 +432,12 @@ def get_holdingpen_entry_details(hpupdate_id):
     (oai_id, record_id,  date_inserted, content)
     """
     query = "SELECT oai_id, id_bibrec, changeset_date, changeset_xml FROM bibHOLDINGPEN WHERE changeset_id=%s"
-    return run_sql(query, (hpupdate_id,))[0]
-
-
-def update_lastrun(index):
-    """ A method that updates the lastrun of a repository
-        successfully harvested """
-    try:
-        today = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
-        sql = 'UPDATE oaiHARVEST SET lastrun=%s WHERE id=%s'
-        run_sql(sql, (today, index))
-        return 1
-    except StandardError, e:
-        return (0, e)
-
-
-def create_oaiharvest_log_str(task_id, oai_src_id, xml_content):
-    """
-    Function which creates the harvesting logs
-    @param task_id bibupload task id
-    """
-    try:
-        records = create_records(xml_content)
-        for record in records:
-            oai_id = record_extract_oai_id(record[0])
-            query = "INSERT INTO oaiHARVESTLOG (id_oaiHARVEST, oai_id, date_harvested, bibupload_task_id) VALUES (%s, %s, NOW(), %s)"
-            run_sql(query, (str(oai_src_id), str(oai_id), str(task_id)))
-    except Exception, msg:
-        print "Logging exception : %s   " % (str(msg),)
+    res = run_sql(query, (hpupdate_id,))
+    if res:
+        try:
+            changeset_xml = zlib.decompress(res[0][3])
+            return res[0][0], res[0][1], res[0][2], changeset_xml
+        except zlib.error:
+            # Legacy: the xml can be in TEXT format, leave it unchanged
+            pass
+        return res[0]

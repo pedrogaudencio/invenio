@@ -44,11 +44,11 @@ def format_element(bfo, style):
         if style != '':
             linkattrd['style'] = style
 
-        out += create_html_link(CFG_SITE_URL + '/%s/managedocfiles' % CFG_SITE_RECORD,
-                         urlargd={'ln': bfo.lang,
-                                  'recid': str(bfo.recID)},
-                         link_label=_("Manage Files of This Record"),
-                         linkattrd=linkattrd)
+        out += create_html_link(CFG_BASE_URL + '/%s/managedocfiles' % CFG_SITE_RECORD,
+                                urlargd={'ln': bfo.lang,
+                                         'recid': str(bfo.recID)},
+                                link_label=_("Manage Files of This Record"),
+                                linkattrd=linkattrd)
     return out
 
 def escape_values(bfo):

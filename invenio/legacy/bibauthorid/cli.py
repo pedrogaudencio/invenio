@@ -22,16 +22,10 @@ bibauthorid_cli
     This module provides a command-line interface for BibAuthorID.
 """
 
-from invenio.legacy.bibauthorid.general_utils import bibauthor_print
 
 def main():
     """Main function """
-    try:
-        import invenio.legacy.bibauthorid.daemon as daemon
-    except ImportError:
-        bibauthor_print("Hmm...No Daemon process running.")
-        return
-
+    import invenio.legacy.bibauthorid.daemon as daemon
     daemon.bibauthorid_daemon()
 
 

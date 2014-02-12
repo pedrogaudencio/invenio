@@ -1,4 +1,5 @@
 http://sourceforge.net/projects/gnuplot-py/files/Gnuplot-py/1.8/gnuplot-py-1.8.tar.gz/download#egg=gnuplot-py-1.8
+h5py==2.0.1
 pylint
 http://sourceforge.net/projects/pychecker/files/pychecker/0.8.19/pychecker-0.8.19.tar.gz/download#egg=pychecker-0.8.19
 pep8
@@ -13,5 +14,6 @@ dropbox
 oauth2client
 apiclient
 urllib3
+rauth==0.6.2
 python-skydrive
-python-openid
+python-openid==2.2.5

@@ -28,15 +28,13 @@ from operator import itemgetter
 
 import invenio.legacy.bibauthorid.dbinterface as dbinter
 
-from invenio.legacy.bibauthorid.dbinterface import *
-
 
 def group_personid(papers_table="aidPERSONID_PAPERS", data_table="aidPERSONID_DATA"):
     '''
     Extracts, groups and returns the whole personid.
     '''
-    papers = dbinter.get_full_personid_papers(papers_table)
-    data = dbinter.get_full_personid_data(data_table)
+    papers = dbinter.get_all_author_paper_associations(papers_table)
+    data = dbinter.get_author_data_associations(data_table)
 
     group = lambda x: groupby(sorted(x, key=itemgetter(0)), key=itemgetter(0))
     to_dict = lambda x: dict((pid, map(itemgetter(slice(1, None)), data)) for pid, data in x)

@@ -2456,7 +2456,8 @@ def add_idx(idxNAME):
                             id_bibrec mediumint(9) unsigned NOT NULL,
                             termlist longblob,
                             type enum('CURRENT','FUTURE','TEMPORARY') NOT NULL default 'CURRENT',
-                            PRIMARY KEY (id_bibrec,type)
+                            PRIMARY KEY (id_bibrec,type),
+                            KEY type (type)
                             ) ENGINE=MyISAM""" % idxID)
 
         res = run_sql("""CREATE TABLE IF NOT EXISTS idxPAIR%02dF (
@@ -2471,7 +2472,8 @@ def add_idx(idxNAME):
                             id_bibrec mediumint(9) unsigned NOT NULL,
                             termlist longblob,
                             type enum('CURRENT','FUTURE','TEMPORARY') NOT NULL default 'CURRENT',
-                            PRIMARY KEY (id_bibrec,type)
+                            PRIMARY KEY (id_bibrec,type),
+                            KEY type (type)
                             ) ENGINE=MyISAM""" % idxID)
 
         res = run_sql("""CREATE TABLE IF NOT EXISTS idxPHRASE%02dF (
@@ -2486,7 +2488,8 @@ def add_idx(idxNAME):
                             id_bibrec mediumint(9) unsigned NOT NULL default '0',
                             termlist longblob,
                             type enum('CURRENT','FUTURE','TEMPORARY') NOT NULL default 'CURRENT',
-                            PRIMARY KEY  (id_bibrec,type)
+                            PRIMARY KEY  (id_bibrec,type),
+                            KEY type (type)
                             ) ENGINE=MyISAM""" % idxID)
 
         res = run_sql("SELECT id from idxINDEX WHERE id=%s", (idxID, ))

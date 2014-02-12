@@ -20,11 +20,6 @@
 INSERT INTO rnkMETHOD (id,name,last_updated) VALUES (1,'wrd','0000-00-00 00:00:00');
 INSERT INTO collection_rnkMETHOD (id_collection,id_rnkMETHOD,score) VALUES (1,1,100);
 
-INSERT INTO rnkCITATIONDATA VALUES (1,'citationdict',NULL,'0000-00-00');
-INSERT INTO rnkCITATIONDATA VALUES (2,'reversedict',NULL,'0000-00-00');
-INSERT INTO rnkCITATIONDATA VALUES (3,'selfcitdict',NULL,'0000-00-00');
-INSERT INTO rnkCITATIONDATA VALUES (4,'selfcitedbydict',NULL,'0000-00-00');
-
 INSERT INTO field VALUES (1,'any field','anyfield');
 INSERT INTO field VALUES (2,'title','title');
 INSERT INTO field VALUES (3,'author','author');
@@ -58,13 +53,16 @@ INSERT INTO field VALUES (30,'author count','authorcount');
 INSERT INTO field VALUES (31,'reference to','rawref');
 INSERT INTO field VALUES (32,'exact title','exacttitle');
 INSERT INTO field VALUES (33,'authority author','authorityauthor');
-INSERT INTO field VALUES (34,'authority institution','authorityinstitution');
+INSERT INTO field VALUES (34,'authority institute','authorityinstitute');
 INSERT INTO field VALUES (35,'authority journal','authorityjournal');
 INSERT INTO field VALUES (36,'authority subject','authoritysubject');
 INSERT INTO field VALUES (37,'item count','itemcount');
 INSERT INTO field VALUES (38,'file type','filetype');
 INSERT INTO field VALUES (39,'miscellaneous', 'miscellaneous');
-INSERT INTO field VALUES (40,'tag','tag');
+INSERT INTO field VALUES (40,'refers to excluding self cites','referstoexcludingselfcites');
+INSERT INTO field VALUES (41,'cited by excluding self cites','citedbyexcludingselfcites');
+INSERT INTO field VALUES (42,'cataloguer nickname','cataloguer');
+INSERT INTO field VALUES (43,'tag','tag');
 
 INSERT INTO field_tag VALUES (10,11,100);
 INSERT INTO field_tag VALUES (11,14,100);
@@ -310,6 +308,7 @@ INSERT INTO format (id,name,code,description,content_type,visibility) VALUES (25
 INSERT INTO format (id,name,code,description,content_type,visibility) VALUES (26,'DataCite','dcite', 'DataCite XML format.', 'text/xml', 0);
 INSERT INTO format (id,name,code,description,content_type,visibility) VALUES (27,'Mobile brief','mobb', 'Mobile brief format.', 'text/html', 0);
 INSERT INTO format (id,name,code,description,content_type,visibility) VALUES (28,'Mobile detailed','mobd', 'Mobile detailed format.', 'text/html', 0);
+INSERT INTO format (id,name,code,description,content_type,visibility) VALUES (29,'WebAuthorProfile data helper','wapdat', 'cPickled dicts', 'text', 0);
 
 INSERT INTO tag VALUES (1,'first author name','100__a');
 INSERT INTO tag VALUES (2,'additional author name','700__a');
@@ -529,10 +528,10 @@ INSERT INTO tag VALUES (214,'988x','988%');
 INSERT INTO tag VALUES (215,'989x','989%');
 -- authority controled tags
 INSERT INTO tag VALUES (216,'author control','100__0');
-INSERT INTO tag VALUES (217,'institution control','110__0');
+INSERT INTO tag VALUES (217,'institute control','110__0');
 INSERT INTO tag VALUES (218,'journal control','130__0');
 INSERT INTO tag VALUES (219,'subject control','150__0');
-INSERT INTO tag VALUES (220,'additional institution control', '260__0');
+INSERT INTO tag VALUES (220,'additional institute control', '260__0');
 INSERT INTO tag VALUES (221,'additional author control', '700__0');
 
 
@@ -550,7 +549,7 @@ INSERT INTO idxINDEX VALUES (9,'fulltext','This index contains words/phrases fro
 INSERT INTO idxINDEX VALUES (10,'year','This index contains words/phrases from year fields.','0000-00-00 00:00:00', '', 'native', '','No','No','No', 'BibIndexYearTokenizer');
 INSERT INTO idxINDEX VALUES (11,'journal','This index contains words/phrases from journal publication information fields.','0000-00-00 00:00:00', '', 'native', '','No','No','No', 'BibIndexJournalTokenizer');
 INSERT INTO idxINDEX VALUES (12,'collaboration','This index contains words/phrases from collaboration name fields.','0000-00-00 00:00:00', '', 'native', '','No','No','No', 'BibIndexDefaultTokenizer');
-INSERT INTO idxINDEX VALUES (13,'affiliation','This index contains words/phrases from institutional affiliation fields.','0000-00-00 00:00:00', '', 'native', '','No','No','No', 'BibIndexDefaultTokenizer');
+INSERT INTO idxINDEX VALUES (13,'affiliation','This index contains words/phrases from affiliation fields.','0000-00-00 00:00:00', '', 'native', '','No','No','No', 'BibIndexDefaultTokenizer');
 INSERT INTO idxINDEX VALUES (14,'exactauthor','This index contains exact words/phrases from author fields.','0000-00-00 00:00:00', '', 'native', '','No','No','No', 'BibIndexExactAuthorTokenizer');
 INSERT INTO idxINDEX VALUES (15,'caption','This index contains exact words/phrases from figure captions.','0000-00-00 00:00:00', '', 'native', '','No','No','No', 'BibIndexDefaultTokenizer');
 INSERT INTO idxINDEX VALUES (16,'firstauthor','This index contains fuzzy words/phrases from first author field.','0000-00-00 00:00:00', '', 'native', '','No','No','No', 'BibIndexAuthorTokenizer');
@@ -558,7 +557,7 @@ INSERT INTO idxINDEX VALUES (17,'exactfirstauthor','This index contains exact wo
 INSERT INTO idxINDEX VALUES (18,'authorcount','This index contains number of authors of the record.','0000-00-00 00:00:00', '', 'native', '','No','No','No', 'BibIndexAuthorCountTokenizer');
 INSERT INTO idxINDEX VALUES (19,'exacttitle','This index contains exact words/phrases from title fields.','0000-00-00 00:00:00', '', 'native', '','No','No','No', 'BibIndexDefaultTokenizer');
 INSERT INTO idxINDEX VALUES (20,'authorityauthor','This index contains words/phrases from author authority records.','0000-00-00 00:00:00', '', 'native', '','No','No','No', 'BibIndexAuthorTokenizer');
-INSERT INTO idxINDEX VALUES (21,'authorityinstitution','This index contains words/phrases from institution authority records.','0000-00-00 00:00:00', '', 'native', '','No','No','No', 'BibIndexDefaultTokenizer');
+INSERT INTO idxINDEX VALUES (21,'authorityinstitute','This index contains words/phrases from institute authority records.','0000-00-00 00:00:00', '', 'native', '','No','No','No', 'BibIndexDefaultTokenizer');
 INSERT INTO idxINDEX VALUES (22,'authorityjournal','This index contains words/phrases from journal authority records.','0000-00-00 00:00:00', '', 'native', '','No','No','No', 'BibIndexDefaultTokenizer');
 INSERT INTO idxINDEX VALUES (23,'authoritysubject','This index contains words/phrases from subject authority records.','0000-00-00 00:00:00', '', 'native', '','No','No','No', 'BibIndexDefaultTokenizer');
 INSERT INTO idxINDEX VALUES (24,'itemcount','This index contains number of copies of items in the library.','0000-00-00 00:00:00', '', 'native', '','No','No','No', 'BibIndexItemCountTokenizer');
@@ -666,6 +665,7 @@ INSERT INTO sbmALLFUNCDESCR VALUES ('Link_Records','Link two records toghether v
 INSERT INTO sbmALLFUNCDESCR VALUES ('Video_Processing',NULL);
 INSERT INTO sbmALLFUNCDESCR VALUES ('Set_RN_From_Sysno', 'Set the value of global rn variable to the report number identified by sysno (recid)');
 INSERT INTO sbmALLFUNCDESCR VALUES ('Notify_URL','Access URL, possibly to post content');
+INSERT INTO sbmALLFUNCDESCR VALUES ('Run_PlotExtractor','Run PlotExtractor on the current record');
 
 INSERT INTO sbmFIELDDESC VALUES ('Upload_Photos',NULL,'','R',NULL,NULL,NULL,NULL,NULL,'\"\"\"\r\nThis is an example of element that creates a photos upload interface.\r\nClone it, customize it and integrate it into your submission. Then add function \r\n\'Move_Photos_to_Storage\' to your submission functions list, in order for files \r\nuploaded with this interface to be attached to the record. More information in \r\nthe WebSubmit admin guide.\r\n\"\"\"\r\n\r\nfrom invenio.legacy.websubmit.functions.Shared_Functions import ParamFromFile\r\nfrom invenio.websubmit_functions.Move_Photos_to_Storage import \\\r\n    read_param_file, \\\r\n    create_photos_manager_interface, \\\r\n    get_session_id\r\n\r\n# Retrieve session id\r\ntry:\r\n    # User info is defined only in MBI/MPI actions...\r\n    session_id = get_session_id(None, uid, user_info) \r\nexcept:\r\n    session_id = get_session_id(req, uid, {})\r\n\r\n# Retrieve context\r\nindir = curdir.split(\'/\')[-3]\r\ndoctype = curdir.split(\'/\')[-2]\r\naccess = curdir.split(\'/\')[-1]\r\n\r\n# Get the record ID, if any\r\nsysno = ParamFromFile(\"%s/%s\" % (curdir,\'SN\')).strip()\r\n\r\n\"\"\"\r\nModify below the configuration of the photos manager interface.\r\nNote: `can_reorder_photos\' parameter is not yet fully taken into consideration\r\n\r\nDocumentation of the function is available at <http://localhost/admin/websubmit/websubmitadmin.py/functionedit?funcname=Move_Photos_to_Storage>\r\n\"\"\"\r\ntext += create_photos_manager_interface(sysno, session_id, uid,\r\n                                        doctype, indir, curdir, access,\r\n                                        can_delete_photos=True,\r\n                                        can_reorder_photos=True,\r\n                                        can_upload_photos=True,\r\n                                        editor_width=700,\r\n                                        editor_height=400,\r\n                                        initial_slider_value=100,\r\n                                        max_slider_value=200,\r\n                                        min_slider_value=80)','0000-00-00','0000-00-00',NULL,NULL,0);
 
@@ -840,6 +840,10 @@ INSERT INTO sbmFUNDESC VALUES ('Notify_URL','content_type');
 INSERT INTO sbmFUNDESC VALUES ('Notify_URL','attempt_times');
 INSERT INTO sbmFUNDESC VALUES ('Notify_URL','attempt_sleeptime');
 INSERT INTO sbmFUNDESC VALUES ('Notify_URL','user');
+INSERT INTO sbmFUNDESC VALUES ('Run_PlotExtractor','with_docname');
+INSERT INTO sbmFUNDESC VALUES ('Run_PlotExtractor','with_doctype');
+INSERT INTO sbmFUNDESC VALUES ('Run_PlotExtractor','with_docformat');
+INSERT INTO sbmFUNDESC VALUES ('Run_PlotExtractor','extract_plots_switch_file');
 
 INSERT INTO sbmGFILERESULT VALUES ('HTML','HTML document');
 INSERT INTO sbmGFILERESULT VALUES ('WORD','data');

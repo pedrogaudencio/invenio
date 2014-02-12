@@ -36,6 +36,7 @@ rewrite_to_secure_url = lazy_import('invenio.utils.url:rewrite_to_secure_url')
 same_urls_p = lazy_import('invenio.utils.url:same_urls_p')
 string_to_numeric_char_reference = lazy_import('invenio.utils.url:string_to_numeric_char_reference')
 wash_url_argument = lazy_import('invenio.utils.url:wash_url_argument')
+get_relative_url = lazy_import('invenio.utils.url:get_relative_url')
 
 
 class TestWashUrlArgument(InvenioTestCase):
@@ -314,11 +315,36 @@ class TestEmailObfuscationMode(InvenioTestCase):
                          {'CFG_SITE_URL': CFG_SITE_URL})
 
 
+
+class TestRelativeURL(InvenioTestCase):
+    """Tests the get_relative_url function with different input strings"""
+
+    def test_relative_url(self):
+        """urlutils - test get_relative_url"""
+        url_normal = "http://web.net"
+        self.assertEqual("", get_relative_url(url_normal))
+
+        url_normal_trailing = "http://web.net/"
+        self.assertEqual("", get_relative_url(url_normal_trailing))
+
+        url_more = "http://web.net/asd"
+        self.assertEqual("/asd", get_relative_url(url_more))
+
+        url_more_trailing = "http://web.net/asd/"
+        self.assertEqual("/asd", get_relative_url(url_more_trailing))
+
+        url_adv = "http://web.net/asd/qwe"
+        self.assertEqual("/asd/qwe", get_relative_url(url_adv))
+
+        url_adv_trailing = "http://web.net/asd/qwe/"
+        self.assertEqual("/asd/qwe", get_relative_url(url_adv_trailing))
+
 TEST_SUITE = make_test_suite(TestWashUrlArgument,
                              TestUrls,
                              TestHtmlLinks,
                              TestEmailObfuscationMode,
-                             TestSecureUrlRewrite)
+                             TestSecureUrlRewrite,
+                             TestRelativeURL)
 
 if __name__ == "__main__":
     run_test_suite(TEST_SUITE)

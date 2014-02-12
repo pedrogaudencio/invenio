@@ -138,6 +138,7 @@ class UserInfo(CombinedMultiDict, UserMixin):
             data['referer'] = request.referrer
             data['uri'] = request.environ['PATH_INFO'] or ''
             data['agent'] = request.headers.get('User-Agent', 'N/A')
+            data['guest_personinfo'] = session.get('personinfo', dict())
             #data['session'] = session.sid
         return data
 

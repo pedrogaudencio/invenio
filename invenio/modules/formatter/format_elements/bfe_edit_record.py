@@ -40,7 +40,7 @@ def format_element(bfo, style):
         linkattrd = {}
         if style != '':
             linkattrd['style'] = style
-        out += create_html_link(CFG_SITE_URL +
+        out += create_html_link(CFG_BASE_URL +
                '/%s/edit/?ln=%s#state=edit&recid=%s' % (CFG_SITE_RECORD, bfo.lang, str(bfo.recID)),
                {},
                link_label=_("Edit This Record"),

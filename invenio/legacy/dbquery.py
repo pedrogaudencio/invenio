@@ -68,7 +68,39 @@ class DBConnect(object):
         return connect
 
 
-def unlock_all(app):
+def _get_password_from_database_password_file(user):
+    """
+    Parse CFG_DATABASE_PASSWORD_FILE and return password
+    corresponding to user.
+    """
+    if os.path.exists(CFG_DATABASE_PASSWORD_FILE):
+        for row in open(CFG_DATABASE_PASSWORD_FILE):
+            if row.strip():
+                a_user, pwd = row.strip().split(" // ")
+                if user == a_user:
+                    return pwd
+        raise ValueError("user '%s' not found in database password file '%s'" % (user, CFG_DATABASE_PASSWORD_FILE))
+    raise IOError("No password defined for user '%s' but database password file is not available" % user)
+
+if CFG_DATABASE_SLAVE_SU_USER and not CFG_DATABASE_SLAVE_SU_PASS and CFG_DATABASE_PASSWORD_FILE:
+    CFG_DATABASE_SLAVE_SU_PASS = _get_password_from_database_password_file(CFG_DATABASE_SLAVE_SU_USER)
+
+def get_connection_for_dump_on_slave():
+    """
+    Return a valid connection, suitable to perform dump operation
+    on a slave node of choice.
+    """
+    connection = connect(host=CFG_DATABASE_SLAVE,
+                                         port=int(CFG_DATABASE_PORT),
+                                         db=CFG_DATABASE_NAME,
+                                         user=CFG_DATABASE_SLAVE_SU_USER,
+                                         passwd=CFG_DATABASE_SLAVE_SU_PASS,
+                                         use_unicode=False, charset='utf8')
+    connection.autocommit(True)
+    return connection
+
+
+def unlock_all():
     for dbhost in _DB_CONN.keys():
         for db in _DB_CONN[dbhost].values():
             try:
@@ -166,7 +198,7 @@ def close_connection(dbhost=None):
     except KeyError:
         pass
 
-def run_sql(sql, param=None, n=0, with_desc=False, with_dict=False, run_on_slave=False):
+def run_sql(sql, param=None, n=0, with_desc=False, with_dict=False, run_on_slave=False, connection=None):
     """Run SQL on the server with PARAM and return result.
     @param param: tuple of string params to insert in the query (see
     notes below)
@@ -175,6 +207,7 @@ def run_sql(sql, param=None, n=0, with_desc=False, with_dict=False, run_on_slave
     columns in query.
     @param with_dict: if True, will return a list of dictionaries
     composed of column-value pairs
+    @param connection: if provided, uses the given connection.
     @return: If SELECT, SHOW, DESCRIBE statements, return tuples of data,
     followed by description if parameter with_desc is
     provided.
@@ -197,6 +230,10 @@ def run_sql(sql, param=None, n=0, with_desc=False, with_dict=False, run_on_slave
     if cfg['CFG_ACCESS_CONTROL_LEVEL_SITE'] == 3:
         # do not connect to the database as the site is closed for maintenance:
         return []
+    elif CFG_ACCESS_CONTROL_LEVEL_SITE > 0:
+        ## Read only website
+        if not sql.upper().startswith("SELECT") and not sql.upper().startswith("SHOW"):
+            return
 
     if param:
         param = tuple(param)
@@ -209,13 +246,15 @@ def run_sql(sql, param=None, n=0, with_desc=False, with_dict=False, run_on_slave
         log_sql_query(dbhost, sql, param)
 
     try:
-        db = _db_login(dbhost)
+        db = connection or _db_login(dbhost)
         cur = db.cursor()
         gc.disable()
         rc = cur.execute(sql, param)
         gc.enable()
     except (OperationalError, InterfaceError): # unexpected disconnect, bad malloc error, etc
         # FIXME: now reconnect is always forced, we may perhaps want to ping() first?
+        if connection is not None:
+            raise
         try:
             db = _db_login(dbhost, relogin=1)
             cur = db.cursor()
@@ -265,8 +304,13 @@ def run_sql_many(query, params, limit=None, run_on_slave=False):
 
     @return: SQL result as provided by database
     """
-    if limit is None:
-        limit = cfg['CFG_MISCUTIL_SQL_RUN_SQL_MANY_LIMIT']
+    if cfg['CFG_ACCESS_CONTROL_LEVEL_SITE'] == 3:
+        # do not connect to the database as the site is closed for maintenance:
+        return []
+    elif cfg['CFG_ACCESS_CONTROL_LEVEL_SITE'] > 0:
+        ## Read only website
+        if not query.upper().startswith("SELECT") and not query.upper().startswith("SHOW"):
+            return
 
     dbhost = cfg['CFG_DATABASE_HOST']
     if run_on_slave and cfg['CFG_DATABASE_SLAVE']:

@@ -51,6 +51,7 @@ from invenio.legacy.webuser import get_preferred_user_language, isGuestUser, \
     getUid, isUserSuperAdmin, collect_user_info, setUid
 from invenio.legacy.wsgi.utils import StringField
 from invenio.modules import apikeys as web_api_key
+from invenio.modules.access.engine import acc_authorize_action
 
 
 ## The following variable is True if the installation make any difference
@@ -273,6 +274,101 @@ class WebInterfaceDirectory(object):
 def create_handler(root):
     """ Return a handler function that will dispatch apache requests
     through the URL layout passed in parameter."""
+
+    def _profiler(req):
+        """ This handler wrap the default handler with a profiler.
+        Profiling data is written into
+        CFG_TMPDIR/invenio-profile-stats-datetime.raw, and
+        is displayed at the bottom of the webpage.
+        To use add profile=1 to your url. To change sorting algorithm you
+        can provide profile=algorithm_name. You can add more than one
+        profile requirement like ?profile=time&profile=cumulative.
+        The list of available algorithm is displayed at the end of the profile.
+        """
+        args = {}
+        if req.args:
+            args = cgi.parse_qs(req.args)
+
+        user_info = collect_user_info(req)
+
+        # Permissions to run the profiler?
+        if acc_authorize_action(user_info, 'profiling')[0]:
+            return _handler(req)
+
+        if user_info.get('enable_profiling') and 'profile' not in args:
+            args['profile'] = 'cumulative'
+
+        # Profiler enabled?
+        if 'profile' in args:
+
+            if 'memory' in args.get('profile', []):
+                gc.set_debug(gc.DEBUG_LEAK)
+                ret = _handler(req)
+                req.write("\n<pre>%s</pre>" % gc.garbage)
+                gc.collect()
+                req.write("\n<pre>%s</pre>" % gc.garbage)
+                gc.set_debug(0)
+                return ret
+
+            from cStringIO import StringIO
+            try:
+                import pstats
+            except ImportError:
+                ret = _handler(req)
+                req.write("<pre>%s</pre>" % "The Python Profiler is not installed!")
+                return ret
+            import datetime
+            date = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+            filename = '%s/invenio-profile-stats-%s.raw' % (CFG_TMPDIR, date)
+            existing_sorts = pstats.Stats.sort_arg_dict_default.keys()
+            required_sorts = []
+            profile_dump = []
+            for sort in args['profile']:
+                if sort not in existing_sorts:
+                    sort = 'cumulative'
+                if sort not in required_sorts:
+                    required_sorts.append(sort)
+            if sys.hexversion < 0x02050000:
+                import hotshot
+                import hotshot.stats
+                pr = hotshot.Profile(filename)
+                ret = pr.runcall(_handler, req)
+                for sort_type in required_sorts:
+                    tmp_out = sys.stdout
+                    sys.stdout = StringIO()
+                    hotshot.stats.load(filename).strip_dirs().sort_stats(sort_type).print_stats()
+                    # pylint: disable=E1103
+                    # This is a hack. sys.stdout was replaced by a StringIO.
+                    profile_dump.append(sys.stdout.getvalue())
+                    # pylint: enable=E1103
+                    sys.stdout = tmp_out
+            else:
+                import cProfile
+                pr = cProfile.Profile()
+                ret = pr.runcall(_handler, req)
+                for sort_type in required_sorts:
+                    strstream = StringIO()
+                    pstats.Stats(pr, stream=strstream).strip_dirs().sort_stats(sort_type).print_stats()
+                    profile_dump.append(strstream.getvalue())
+            profile_dump = '\n'.join(profile_dump)
+            profile_dump += '\nYou can use profile=%s or profile=memory' % existing_sorts
+            req.write("\n<pre>%s</pre>" % profile_dump)
+            return ret
+        elif 'debug' in args and args['debug']:
+            #remote_debugger.start(["3"]) # example starting debugger on demand
+            if remote_debugger:
+                debug_starter = remote_debugger.get_debugger(args['debug'])
+                if debug_starter:
+                    try:
+                        debug_starter()
+                    except Exception, msg:
+                        # TODO - should register_exception?
+                        raise Exception('Cannot start the debugger %s, please read instructions inside remote_debugger module. %s' % (debug_starter.__name__, msg))
+                else:
+                    raise Exception('Debugging requested, but no debugger registered: "%s"' % args['debug'])
+            return _handler(req)
+        else:
+            return _handler(req)
 
     def _handler(req):
         """ This handler is invoked by mod_python with the apache request."""
