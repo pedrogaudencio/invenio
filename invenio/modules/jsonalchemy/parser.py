@@ -745,7 +745,7 @@ def get_producer_rules(field, code, namespace):
     From the field definitions gets all the producer rules related with the
     field and the code (using also the namespace).
 
-    >>> get_producer_rules('author', 'json_for_marc', 'recordext')
+    >>> get_producer_rules('authors', 'json_for_marc', 'recordext')
     [('authors[0]',
       [((),
         {'100__a': 'full_name',
