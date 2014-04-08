@@ -19,6 +19,7 @@
 
 # from wtforms.validators import ValidationError, StopValidation, Regexp
 from werkzeug import MultiDict
+
 from invenio.utils.datacite import DataciteMetadata
 from invenio.utils.sherpa_romeo import SherpaRomeoSearch
 from invenio.modules.records.api import get_record
