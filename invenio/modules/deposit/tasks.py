@@ -484,6 +484,18 @@ def finalize_record_sip(is_dump=True):
     return _finalize_sip
 
 
+def hold_for_approval():
+    """
+    Holds the deposition on the Holding Pen for admin approval
+    """
+    def _hold_for_approval(obj, dummy_eng):
+        from invenio.modules.workflows.tasks.marcxml_tasks import approve_record
+        d = Deposition(obj)
+        if d.type.hold_for_upload:
+            approve_record(obj, dummy_eng)
+    return _hold_for_approval
+
+
 def upload_record_sip():
     """
     Generates the record from marc.
