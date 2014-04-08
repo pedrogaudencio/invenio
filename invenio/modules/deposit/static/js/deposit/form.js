@@ -219,8 +219,9 @@ var DEPOSIT_FORM = (function( $ ){
               })
           );
 
+          var error_state = 'danger';
 
-          ['info','warning','error','success'].map(function(s){
+          $.map(['info', 'warning', 'error', 'success'], function(s){
               $("#state-group-" + name).removeClass(s);
               $("#state-" + name).removeClass('alert-'+s);
               if(s == state) {
@@ -228,7 +229,10 @@ var DEPOSIT_FORM = (function( $ ){
                       has_error = true;
                   }
                   $("#state-group-" + name).addClass(state);
-                  $("#state-" + name).addClass('alert-'+state);
+                  if(s == 'error')
+                      $("#state-" + name).addClass('alert-'+error_state);
+                  else
+                      $("#state-" + name).addClass('alert-'+state);
               }
           });
 
