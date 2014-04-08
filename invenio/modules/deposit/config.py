@@ -56,3 +56,6 @@ DEPOSIT_STORAGEDIR = os.path.join(sys.prefix, "var/data/deposit/storage")
 
 DEPOSIT_MAX_UPLOAD_SIZE = 104857600
 """ Maximum upload size """
+
+DEPOSIT_CROSSREF_EMAIL = None
+""" Crossref user email """

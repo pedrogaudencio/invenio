@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 ##
 ## This file is part of Invenio.
-## Copyright (C) 2013 CERN.
+## Copyright (C) 2014 CERN.
 ##
 ## Invenio is free software; you can redistribute it and/or
 ## modify it under the terms of the GNU General Public License as
@@ -19,6 +19,7 @@
 
 # from wtforms.validators import ValidationError, StopValidation, Regexp
 from werkzeug import MultiDict
+
 from invenio.utils.datacite import DataciteMetadata
 from invenio.utils.sherpa_romeo import SherpaRomeoSearch
 from invenio.modules.records.api import get_record
@@ -69,9 +70,7 @@ class PidSchemeDetection(object):
 
 
 class PidNormalize(object):
-    """
-    Normalize a persistent identifier
-    """
+    """ Normalize a persistent identifier. """
     def __init__(self, scheme_field=None):
         self.scheme_field = scheme_field
 
@@ -87,7 +86,7 @@ class PidNormalize(object):
 
 def datacite_dict_mapper(datacite, form, mapping):
     """
-    Helper function to map DataCite metadata to form fields based on a mapping
+    Helper function to map DataCite metadata to form fields based on a mapping.
     """
     for func_name, field_name in mapping.items():
         setattr(form, field_name, getattr(datacite, func_name)())
@@ -291,3 +290,12 @@ def record_id_process(form, field, submit=False):
         form.process(MultiDict(webdeposit_json))
     else:
         field.add_message("Record doesn't exist", state='info')
+
+
+def etree_to_dict(tree):
+    """ Translate etree into dictionary. """
+    d = {tree.tag.split('}')[1]: map(
+        etree_to_dict, tree.iterchildren()
+        ) or tree.text}
+
+    return d
