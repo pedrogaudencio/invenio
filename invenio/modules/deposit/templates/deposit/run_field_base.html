@@ -28,7 +28,7 @@
         {%- if thisfield.description %}
             <p class="text-muted field-desc"><small>{{thisfield.description|urlize}}</small></p>
         {%- endif %}
-        <div class="alert help-block alert-danger" id="state-{{ thisfield.name }}" style="margin-top: 5px;{% if thisfield.errors %} display:block;{% else%} display: none;{% endif %}">
+        <div class="alert help-block" id="state-{{ thisfield.name }}" style="margin-top: 5px; display: {{ "block" if thisfield.errors else "none" }};">
             {%- for error in thisfield.errors %}
                 <div>{{ error }}</div>
             {%- endfor %}
