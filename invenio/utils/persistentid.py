@@ -300,7 +300,7 @@ def is_arxiv_post_2007(val):
 
 
 def is_arxiv_pre_2007(val):
-    return arxiv_post_2007_regexp.match(val)
+    return arxiv_pre_2007_regexp.match(val)
 
 
 def is_arxiv(val):

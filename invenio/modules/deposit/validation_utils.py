@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 ##
 ## This file is part of Invenio.
-## Copyright (C) 2013 CERN.
+## Copyright (C) 2013, 2014 CERN.
 ##
 ## Invenio is free software; you can redistribute it and/or
 ## modify it under the terms of the GNU General Public License as
@@ -26,6 +26,7 @@ import re
 from wtforms.validators import ValidationError, StopValidation, Regexp
 from invenio.utils import persistentid as pidutils
 from flask import current_app
+
 
 #
 # General purpose validators
@@ -66,7 +67,6 @@ class ListLength(object):
                         "entry is" if self.max == 1 else "entries are"
                     )
                 )
-
 
 
 class RequiredIf(object):
