@@ -55,6 +55,8 @@ class SimpleRecordDeposition(DepositionType):
         upload_record_sip(),
     ]
 
+    hold_for_upload = False
+
     @classmethod
     def render_completed(cls, d):
         """
