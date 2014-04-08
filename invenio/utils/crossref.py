@@ -20,9 +20,10 @@
 """ API to fetch metadata in MARCXML format from crossref site using DOI """
 
 import urllib2
+from json import json
 
-from invenio.config import CFG_ETCDIR, CFG_CROSSREF_USERNAME, \
- CFG_CROSSREF_PASSWORD
+from invenio.config import CFG_CROSSREF_USERNAME, \
+    CFG_CROSSREF_PASSWORD
 from invenio.legacy.bibconvert.registry import templates
 from invenio.legacy.bibconvert.xslt_engine import convert
 
@@ -37,6 +38,7 @@ class CrossrefError(Exception):
     def __str__(self):
         """Returns error code"""
         return repr(self.code)
+
 
 def get_marcxml_for_doi(doi):
     """
@@ -53,7 +55,7 @@ def get_marcxml_for_doi(doi):
     doi = doi.strip()
 
     # Getting the data from external source
-    url = "http://www.crossref.org/openurl/?pid=" +  CFG_CROSSREF_USERNAME \
+    url = "http://www.crossref.org/openurl/?pid=" + CFG_CROSSREF_USERNAME \
         + ":" + CFG_CROSSREF_PASSWORD + "&noredirect=tru&id=doi:" + doi
     request = urllib2.Request(url)
     response = urllib2.urlopen(request)
@@ -71,6 +73,27 @@ def get_marcxml_for_doi(doi):
     # Seting the path to xsl template
     xsl_crossref2marc_config = templates.get('crossref2marcxml.xsl', '')
 
-    output = convert(xmltext=content, \
-                    template_filename=xsl_crossref2marc_config)
+    output = convert(xmltext=content,
+                     template_filename=xsl_crossref2marc_config)
     return output
+
+
+def get_json_for_doi(doi):
+    """
+    Send doi to crossref API to gather content to
+    autofill form fields.
+    """
+    # Clean the DOI
+    doi = doi.strip()
+
+    # Getting the data from external source
+    url = "http://search.crossref.org/dois?q=" + doi
+    request = urllib2.urlopen(url)
+    content = request.read()
+    jsondata = json.loads(content)
+
+    if jsondata:
+        return jsondata[0]
+    else:
+        # Record not found
+        return {}
