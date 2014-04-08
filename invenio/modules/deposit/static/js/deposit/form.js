@@ -220,7 +220,7 @@ var DEPOSIT_FORM = (function( $ ){
           );
 
 
-          ['info','warning','error','success'].map(function(s){
+          ['info','warning','error','success','danger'].map(function(s){
               $("#state-group-" + name).removeClass(s);
               $("#state-" + name).removeClass('alert-'+s);
               if(s == state) {
