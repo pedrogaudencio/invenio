@@ -27,6 +27,7 @@ from wtforms.validators import ValidationError, StopValidation, Regexp
 from invenio.utils import persistentid as pidutils
 from flask import current_app
 
+
 #
 # General purpose validators
 #
@@ -66,7 +67,6 @@ class ListLength(object):
                         "entry is" if self.max == 1 else "entries are"
                     )
                 )
-
 
 
 class RequiredIf(object):
@@ -256,6 +256,17 @@ class PidValidator(object):
         schemes = pidutils.detect_identifier_schemes(field.data)
         if not schemes:
             raise ValidationError(self.message)
+
+
+#
+# ArXiv-related validators (only supports the new format)
+#
+arxiv_syntax_validator = Regexp(
+    "(^$|(arxiv:)?[0-9]{4}.[0-9]{4}(v{1}[0-9]*){0,1})|(^$|(arxiv:)?[a-z-]+/[0-9]+)",
+    flags=re.I,
+    message="The provided ArXiv id is invalid - it should look similar to "
+            "'1234.5678' or to 'astro-ph/1234567'."
+)
 
 
 #
