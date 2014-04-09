@@ -22,6 +22,7 @@ from wtforms.fields.core import _unset_value
 from .abstract import *
 from .author import *
 from .date import *
+from .arxiv import *
 from .doi import *
 from .file_upload import *
 from .issn import *
