@@ -62,9 +62,7 @@ default_breadcrumb_root(blueprint, '.webdeposit')
 
 
 def deposition_error_handler(endpoint='.index'):
-    """
-    Decorator to handle deposition exceptions
-    """
+    """ Decorator to handle deposition exceptions. """
     def decorator(f):
         @wraps(f)
         def inner(*args, **kwargs):
@@ -102,7 +100,7 @@ def deposition_error_handler(endpoint='.index'):
 @register_breadcrumb(blueprint, '.', _('Deposit'))
 def index():
     """
-    Renders the deposition index page
+    Render deposition index page.
 
     The template context can be customized via the template_context_created
     signal.
@@ -161,9 +159,7 @@ def deposition_type_index(deposition_type):
 @login_required
 @deposition_error_handler()
 def create(deposition_type=None):
-    """
-    Create a new deposition
-    """
+    """ Create a new deposition. """
     if request.is_xhr and request.method != 'POST':
         return ('', 405)
 
@@ -194,7 +190,7 @@ def create(deposition_type=None):
 @deposition_error_handler()
 def save(deposition_type=None, uuid=None, draft_id=None):
     """
-    Save and run error check on field values
+    Save and run error check on field values.
 
     The request body must contain a JSON-serialized field/value-dictionary.
     A single or multiple fields may be passed in the dictionary, and values
@@ -273,7 +269,7 @@ def save(deposition_type=None, uuid=None, draft_id=None):
 @deposition_error_handler()
 def delete(deposition_type=None, uuid=None):
     """
-    Deletes the whole deposition with uuid=uuid (including form drafts) and
+    Delete whole deposition with uuid=uuid (including form drafts) and
     redirect to index page.
     """
     deposition = Deposition.get(uuid, current_user, type=deposition_type)
@@ -290,7 +286,7 @@ def delete(deposition_type=None, uuid=None):
 @deposition_error_handler()
 def run(deposition_type=None, uuid=None):
     """
-    Runs the workflows and shows the current output of the workflow.
+    Run the workflows and shows the current output of the workflow.
     """
     deposition = Deposition.get(uuid, current_user, type=deposition_type)
 
@@ -303,9 +299,7 @@ def run(deposition_type=None, uuid=None):
 @login_required
 @deposition_error_handler()
 def edit(deposition_type=None, uuid=None):
-    """
-    Reinitialize a completed workflow (i.e. prepare it for editing)
-    """
+    """ Reinitialize a completed workflow (i.e. prepare it for editing). """
     deposition = Deposition.get(uuid, current_user, type=deposition_type)
     deposition.reinitialize_workflow()
     deposition.save()
@@ -327,7 +321,7 @@ def edit(deposition_type=None, uuid=None):
 @deposition_error_handler()
 def discard(deposition_type=None, uuid=None):
     """
-    Stop an inprogress workflow (i.e. discard editing changes)
+    Stop an inprogress workflow (i.e. discard editing changes).
 
     Only possible, if workflow already has a sip.
     """
@@ -353,9 +347,7 @@ def discard(deposition_type=None, uuid=None):
 @login_required
 @deposition_error_handler()
 def status(deposition_type=None, uuid=None, draft_id=None):
-    """
-    Get the status of a draft (uncompleted/completed)
-    """
+    """ Get the status of a draft (uncompleted/completed). """
     warnings.warn("View has been deprecated", DeprecationWarning)
     deposition = Deposition.get(uuid, current_user, type=deposition_type)
     completed = deposition.get_draft(draft_id).is_completed()
@@ -367,9 +359,7 @@ def status(deposition_type=None, uuid=None, draft_id=None):
 @login_required
 @deposition_error_handler()
 def upload_url(deposition_type=None, uuid=None):
-    """
-    Upload a new file by use of a URL
-    """
+    """ Upload a new file by use of a URL. """
     deposition = Deposition.get(uuid, current_user, type=deposition_type)
 
     # TODO: Improve to read URL as a chunked file to prevent overfilling
@@ -401,9 +391,7 @@ def upload_url(deposition_type=None, uuid=None):
 @login_required
 @deposition_error_handler()
 def upload_file(deposition_type=None, uuid=None):
-    """
-    Upload a new file (with chunking support)
-    """
+    """ Upload a new file (with chunking support). """
     deposition = Deposition.get(uuid, current_user, type=deposition_type)
 
     uploaded_file = request.files['file']
@@ -443,9 +431,7 @@ def upload_file(deposition_type=None, uuid=None):
 @login_required
 @deposition_error_handler()
 def delete_file(deposition_type=None, uuid=None):
-    """
-    Delete an uploaded file
-    """
+    """ Delete an uploaded file. """
     deposition = Deposition.get(uuid, current_user, type=deposition_type)
 
     try:
@@ -465,9 +451,7 @@ def delete_file(deposition_type=None, uuid=None):
 @login_required
 @deposition_error_handler()
 def get_file(deposition_type=None, uuid=None):
-    """
-    Download an uploaded file
-    """
+    """ Download an uploaded file. """
     deposition = Deposition.get(uuid, current_user, type=deposition_type)
 
     df = deposition.get_file(request.args.get('file_id'))
@@ -490,9 +474,7 @@ def get_file(deposition_type=None, uuid=None):
 @login_required
 def autocomplete(deposition_type=None, uuid=None, draft_id=None,
                  field_name=None):
-    """
-    Auto-complete a form field
-    """
+    """ Auto-complete a form field. """
     term = request.args.get('term')  # value
     limit = request.args.get('limit', 50, type=int)
 
@@ -511,3 +493,16 @@ def autocomplete(deposition_type=None, uuid=None, draft_id=None,
     )
     resp.mimetype = "application/json"
     return resp
+
+
+@blueprint.route('/search_doi/', methods=['GET'])
+@login_required
+def search_doi():
+    """ Search for given DOI. """
+    doi = request.args.get('doi')
+
+    from invenio.utils.crossref import get_json_for_doi as crossref_doi
+
+    result = crossref_doi(doi)
+
+    return jsonify(result)
