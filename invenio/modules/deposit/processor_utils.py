@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 ##
 ## This file is part of Invenio.
-## Copyright (C) 2014 CERN.
+## Copyright (C) 2013, 2014 CERN.
 ##
 ## Invenio is free software; you can redistribute it and/or
 ## modify it under the terms of the GNU General Public License as
@@ -70,7 +70,9 @@ class PidSchemeDetection(object):
 
 
 class PidNormalize(object):
+
     """ Normalize a persistent identifier. """
+
     def __init__(self, scheme_field=None):
         self.scheme_field = scheme_field
 
