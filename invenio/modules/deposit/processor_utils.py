@@ -43,7 +43,7 @@ def replace_field_data(field_name, getter=None):
 
 
 def set_flag(flag_name):
-    """ Return processor which will set a given flag on a field."""
+    """Return a processor, which will set a given flag on a field."""
     def _inner(form, field, submit=False, fields=None):
         setattr(field.flags, flag_name, True)
     return _inner
