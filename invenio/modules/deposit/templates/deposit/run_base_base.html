@@ -84,64 +84,68 @@
 </div>
 {% endblock form_submit_dialog %}
 <div class="row">
-    <div id="file_container" class="col-md-8 form-feedback-warning">
-    <div id="flash-message"></div>
-    <form enctype="multipart/form-data" name="submitForm" id="submitForm" role="form" class="form-horizontal" method="post" action="{{ url_for('.run', deposition_type=deposition_type, uuid=uuid) }}">
-    {% block form_header scoped %}{{ form_action_bar() }}{% endblock form_header%}
+    {% block file_container %}
+        <div id="file_container" class="{% block file_container_colsize %}col-md-8{% endblock %} form-feedback-warning">
+        <div id="flash-message"></div>
+        <form enctype="multipart/form-data" name="submitForm" id="submitForm" role="form" class="form-horizontal" method="post" action="{{ url_for('.run', deposition_type=deposition_type, uuid=uuid) }}">
+        {% block form_header scoped %}{{ form_action_bar() }}{% endblock form_header%}
 
-    {% block form_title scoped %}
-        <h1>{{ form._title }}</h1>
-        {% if form._subtitle %}
-            <p class="text-muted"><small>{{ form._subtitle|safe }}</small></p>
-        {% endif %}
-    {% endblock form_title %}
+        {% block form_title scoped %}
+            <h1>{{ form._title }}</h1>
+            {% if form._subtitle %}
+                <p class="text-muted"><small>{{ form._subtitle|safe }}</small></p>
+            {% endif %}
+        {% endblock form_title %}
 
-    {% block form_body scoped %}
-        {% for group, fields in form.get_groups() %}
-            {% set grouploop = loop %}
-            {% block form_group scoped %}
-                {% if grouploop.first %}
-                    <div id="webdeposit_form_accordion">
-                {% endif %}
-                {% block form_group_header scoped %}
-                    {% if group %}
-                        {{ form_group_accordion_start(group, grouploop.index) }}
+        {% block form_body scoped %}
+            {% for group, fields in form.get_groups() %}
+                {% set grouploop = loop %}
+                {% block form_group scoped %}
+                    {% if grouploop.first %}
+                        <div id="webdeposit_form_accordion">
                     {% endif %}
-                {% endblock %}
+                    {% block form_group_header scoped %}
+                        {% if group %}
+                            {{ form_group_accordion_start(group, grouploop.index) }}
+                        {% endif %}
+                    {% endblock %}
 
-                {% block form_group_body scoped %}
-                    {% if group and group.meta.description %}
-                        <p>{{ group.meta.description|urlize }}</p>
-                    {% endif %}
+                    {% block form_group_body scoped %}
+                        {% if group and group.meta.description %}
+                            <p>{{ group.meta.description|urlize }}</p>
+                        {% endif %}
 
-                    {% block fieldset scoped %}
-                    {% for field in fields %}
-                        {% block field_body scoped %}
-                            {{ field_display(field, field_class="") }}
-                        {% endblock field_body %}
-                    {% endfor %}
-                    {% endblock fieldset %}
-                {% endblock form_group_body%}
+                        {% block fieldset scoped %}
+                        {% for field in fields %}
+                            {% block field_body scoped %}
+                                {{ field_display(field, field_class="") }}
+                            {% endblock field_body %}
+                        {% endfor %}
+                        {% endblock fieldset %}
+                    {% endblock form_group_body%}
 
-                {% block form_group_footer scoped %}
-                    {% if group %}
-                        {{ form_group_accordion_end(group, grouploop.index) }}
-                    {% endif %}
+                    {% block form_group_footer scoped %}
+                        {% if group %}
+                            {{ form_group_accordion_end(group, grouploop.index) }}
+                        {% endif %}
 
-                {% endblock form_group_footer %}
+                    {% endblock form_group_footer %}
 
-                {% if grouploop.last %}</div>{% endif %}
-            {% endblock form_group %}
-        {% endfor %}
-    {% endblock form_body %}
-    {% block form_footer scoped %}{{ form_action_bar() }}{% endblock form_footer %}
-    </form>
-    </div>
-    {% if form._drafting %}
-        <div class="col-md-4">
-            {% include "deposit/myview.html" %}
+                    {% if grouploop.last %}</div>{% endif %}
+                {% endblock form_group %}
+            {% endfor %}
+        {% endblock form_body %}
+        {% block form_footer scoped %}{{ form_action_bar() }}{% endblock form_footer %}
+        </form>
         </div>
-    {% endif %}
+    {% endblock %}
+    {% block sidebar %}
+        {% if form._drafting %}
+            <div class="col-md-4">
+                {% include "deposit/myview.html" %}
+            </div>
+        {% endif %}
+    {% endblock %}
     </div>
 </div>
 {% endblock %}
