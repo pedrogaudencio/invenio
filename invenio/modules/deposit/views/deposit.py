@@ -492,7 +492,7 @@ def autocomplete(deposition_type=None, uuid=None, draft_id=None,
 @blueprint.route('/search_doi/', methods=['GET'])
 @login_required
 def search_doi():
-    """ Search for given DOI. """
+    """Search for given DOI."""
     doi = request.args.get('doi')
 
     from invenio.utils.crossref import get_json_for_doi as crossref_doi
