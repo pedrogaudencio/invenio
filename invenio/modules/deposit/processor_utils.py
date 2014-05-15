@@ -32,7 +32,7 @@ from invenio.utils import persistentid as pidutils
 
 def replace_field_data(field_name, getter=None):
     """
-    Returns a processor, which will replace the given field names value with
+    Return a processor, which will replace the given field names value with
     the value from the field where the processor is installed.
     """
     def _inner(form, field, submit=False, fields=None):
@@ -42,9 +42,7 @@ def replace_field_data(field_name, getter=None):
 
 
 def set_flag(flag_name):
-    """
-    Returns a processor, which will set a given flag on a field.
-    """
+    """Return a processor, which will set a given flag on a field."""
     def _inner(form, field, submit=False, fields=None):
         setattr(field.flags, flag_name, True)
     return _inner
@@ -54,9 +52,9 @@ def set_flag(flag_name):
 # PID processors
 #
 class PidSchemeDetection(object):
-    """
-    Detect the persistent identifier scheme and store it in another field.
-    """
+
+    """Detect the persistent identifier scheme and store it in another field."""
+
     def __init__(self, set_field=None):
         self.set_field = set_field
 
@@ -71,7 +69,7 @@ class PidSchemeDetection(object):
 
 class PidNormalize(object):
 
-    """ Normalize a persistent identifier. """
+    """Normalize a persistent identifier."""
 
     def __init__(self, scheme_field=None):
         self.scheme_field = scheme_field
@@ -87,9 +85,7 @@ class PidNormalize(object):
 #
 
 def datacite_dict_mapper(datacite, form, mapping):
-    """
-    Helper function to map DataCite metadata to form fields based on a mapping.
-    """
+    """Helper function to map DataCite metadata to form fields based on a mapping."""
     for func_name, field_name in mapping.items():
         setattr(form, field_name, getattr(datacite, func_name)())
 
@@ -295,7 +291,7 @@ def record_id_process(form, field, submit=False):
 
 
 def etree_to_dict(tree):
-    """ Translate etree into dictionary. """
+    """Translate etree into dictionary."""
     d = {tree.tag.split('}')[1]: map(
         etree_to_dict, tree.iterchildren()
         ) or tree.text}
