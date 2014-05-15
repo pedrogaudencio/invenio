@@ -43,7 +43,7 @@ def replace_field_data(field_name, getter=None):
 
 
 def set_flag(flag_name):
-    """ Return processor which will set a given flag on a field."""
+    """Return a processor, which will set a given flag on a field."""
     def _inner(form, field, submit=False, fields=None):
         setattr(field.flags, flag_name, True)
     return _inner
@@ -294,7 +294,7 @@ def record_id_process(form, field, submit=False):
 
 
 def etree_to_dict(tree):
-    """ Translate etree into dictionary. """
+    """Translate etree into dictionary."""
     d = {tree.tag.split('}')[1]: map(
         etree_to_dict, tree.iterchildren()
         ) or tree.text}
