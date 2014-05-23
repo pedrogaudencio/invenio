@@ -32,8 +32,10 @@ from invenio.utils import persistentid as pidutils
 
 def replace_field_data(field_name, getter=None):
     """
-    Return a processor, which will replace the given field names value with
-    the value from the field where the processor is installed.
+    Return a processor.
+
+    This will replace the given field names value with the value from the field
+    where the processor is installed.
     """
     def _inner(form, field, submit=False, fields=None):
         getattr(form, field_name).data = getter(field) if getter else \
@@ -91,10 +93,13 @@ def datacite_dict_mapper(datacite, form, mapping):
 
 
 class DataCiteLookup(object):
+
     """
-    Lookup DOI metadata in DataCite but only if DOI is not locally
-    administered.
+    Lookup DOI metadata in DataCite.
+
+    But only if DOI is not locally administered.
     """
+
     def __init__(self, display_info=False, mapping=None,
                  mapping_func=None, exclude_prefix='10.5072'):
         self.display_info = display_info

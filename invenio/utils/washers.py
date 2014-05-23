@@ -1,20 +1,20 @@
 # -*- coding: utf-8 -*-
-## This file is part of Invenio.
-## Copyright (C) 2012, 2013 CERN.
+# This file is part of Invenio.
+# Copyright (C) 2012, 2013, 2014 CERN.
 ##
-## Invenio is free software; you can redistribute it and/or
-## modify it under the terms of the GNU General Public License as
-## published by the Free Software Foundation; either version 2 of the
-## License, or (at your option) any later version.
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
 ##
-## Invenio is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
 ##
-## You should have received a copy of the GNU General Public License
-## along with Invenio; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 """
 Invenio -> Flask adapter utilities
@@ -24,9 +24,9 @@ import types
 
 
 def wash_urlargd(form, content):
-    """
-    Wash the complete form based on the specification in
-    content. Content is a dictionary containing the field names as a
+    """Wash the complete form based on the specification in content.
+
+    Content is a dictionary containing the field names as a
     key, and a tuple (type, default) as value.
 
     'type' can be list, unicode, invenio.legacy.wsgi.utils.StringField, int, tuple, or
@@ -99,15 +99,16 @@ def wash_urlargd(form, content):
             result[k] = [value]
 
         else:
-            raise ValueError('cannot cast form value %s of type %r into type %r' % (value, src_type, dst_type))
+            raise ValueError('cannot cast form value %s of type %r into type %r' % (
+                value, src_type, dst_type))
 
     return result
 
 
 def wash_html_id(dirty):
-    """Strips any non-alphabetic or -newline characters from a given string,
-    such that it can be used as a HTML element ID (also with jQuery and in all
-    browsers).
+    """Strip non-alphabetic or newline characters from a given string.
+
+    It can be used as a HTML element ID (also with jQuery and in all browsers).
 
     Args:
         dirty - the string to wash
@@ -120,3 +121,12 @@ def wash_html_id(dirty):
         dirty = 'i' + dirty
     non_word = re.compile(r'[^\w]+')
     return non_word.sub('', dirty)
+
+
+def remove_underscore_keys(dictionary):
+    """Remove underscore keys from a dictionary."""
+    for key in dictionary.keys():
+        if key.startswith('_'):
+            dictionary.pop(key)
+
+    return dictionary
