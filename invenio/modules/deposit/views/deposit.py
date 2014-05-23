@@ -497,8 +497,15 @@ def search_doi():
     """Search for given DOI."""
     doi = request.args.get('doi')
 
-    from invenio.utils.crossref import get_json_for_doi as crossref_doi
+    from invenio.utils.crossref import get_json_for_doi
+    from invenio.modules.records.utils import get_unique_record_json
+    from invenio.utils.washers import remove_underscore_keys
 
-    result = crossref_doi(doi)
+    # queries the database
+    result = get_unique_record_json(doi)
+    result['query'] = remove_underscore_keys(result['query'])
+    if result['query']['status'] == 'notfound':
+        # queries crossref
+        result = get_json_for_doi(doi)
 
     return jsonify(result)
