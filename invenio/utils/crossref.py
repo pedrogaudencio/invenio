@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 ##
 ## This file is part of Invenio.
-## Copyright (C) 2014 CERN.
+## Copyright (C) 2012, 2014 CERN.
 ##
 ## Invenio is free software; you can redistribute it and/or
 ## modify it under the terms of the GNU General Public License as
@@ -44,15 +44,8 @@ class CrossrefError(Exception):
         return repr(self.code)
 
 
-def get_marcxml_for_doi(doi):
-    """
-    Send doi to the http://www.crossref.org/openurl page.
-
-    Attaches parameters: email, doi and redirect.
-    Returns the MARCXML code or throws an exception, when
-    1. DOI is malformed
-    2. Record not found
-    """
+def get_crossref_content(doi):
+    """Get Crossref content from the http://www.crossref.org/openurl page."""
     if cfg.get('DEPOSIT_CROSSREF_EMAIL') is None:
         raise CrossrefError("error_crossref_no_account")
 
@@ -65,12 +58,25 @@ def get_marcxml_for_doi(doi):
                                         redirect=False,
                                         id=doi)
                             )
-    content = response.content
+
+    return response
+
+
+def get_marcxml_for_doi(doi):
+    """
+    Get MARCXML format querying Crossref.
+
+    Attaches parameters: email, doi and redirect.
+    Returns the MARCXML code or throws an exception, when
+    1. DOI is malformed
+    2. Record not found
+    """
+    response = get_crossref_content(doi)
 
     # Check if the returned page is html - this means the DOI is malformed
     if "text/html" in response.headers['content-type']:
         raise CrossrefError("error_crossref_malformed_doi")
-    if 'status="unresolved"' in content:
+    if 'status="unresolved"' in response.content:
         raise CrossrefError("error_crossref_record_not_found")
 
     # Convert xml to marc using convert function
@@ -78,25 +84,14 @@ def get_marcxml_for_doi(doi):
     # Seting the path to xsl template
     xsl_crossref2marc_config = templates.get('crossref2marcxml.xsl', '')
 
-    output = convert(xmltext=content,
+    output = convert(xmltext=response.content,
                      template_filename=xsl_crossref2marc_config)
     return output
 
 
 def get_json_for_doi(doi):
-    """ Send doi to crossref API to gather content to autofill form fields. """
-    if cfg.get('DEPOSIT_CROSSREF_EMAIL') is None:
-        raise CrossrefError("error_crossref_no_account")
-
-    # Clean the DOI
-    doi = doi.strip()
-
-    response = requests.get("http://www.crossref.org/openurl/",
-                            params=dict(pid=cfg.get('DEPOSIT_CROSSREF_EMAIL'),
-                                        redirect=False,
-                                        id=doi)
-                            )
-    content = response.content
+    """Get doi json data."""
+    response = get_crossref_content(doi)
 
     query = {}
     # Check if the returned page is html - this means the DOI is malformed
@@ -104,10 +99,10 @@ def get_json_for_doi(doi):
         data = {}
         query['status'] = 'malformed'
     else:
-        data = etree_to_dict(fromstring(content))
+        data = etree_to_dict(fromstring(response.content))
 
         # Check if status="unresolved" - this means the DOI was not found
-        if 'status="unresolved"' in content:
+        if 'status="unresolved"' in response.content:
             query['status'] = 'notfound'
         else:
             query['status'] = 'success'
