@@ -27,7 +27,7 @@ from lxml.etree import fromstring
 from invenio.base.globals import cfg
 from invenio.legacy.bibconvert.registry import templates
 from invenio.legacy.bibconvert.xslt_engine import convert
-from invenio.modules.deposit.processor_utils import etree_to_dict
+from invenio.utils.xmlhelpers import etree_to_dict
 
 
 # Exceptions classes
