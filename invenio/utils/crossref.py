@@ -17,9 +17,7 @@
 ## along with Invenio; if not, write to the Free Software Foundation, Inc.,
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
-"""
-API to fetch metadata in MARCXML and JSON formats from crossref site using DOI
-"""
+"""API to fetch metadata in MARCXML/JSON formats from crossref using DOI."""
 
 import requests
 from lxml.etree import fromstring
@@ -27,20 +25,20 @@ from lxml.etree import fromstring
 from invenio.base.globals import cfg
 from invenio.legacy.bibconvert.registry import templates
 from invenio.legacy.bibconvert.xslt_engine import convert
-from invenio.modules.deposit.processor_utils import etree_to_dict
+from invenio.utils.xmlhelpers import etree_to_dict
 
 
 # Exceptions classes
 class CrossrefError(Exception):
 
-    """ Crossref errors. """
+    """Crossref errors."""
 
     def __init__(self, code):
-        """ Initialisation. """
+        """Initialisation."""
         self.code = code
 
     def __str__(self):
-        """ Return error code. """
+        """Return error code."""
         return repr(self.code)
 
 
@@ -63,8 +61,7 @@ def get_crossref_content(doi):
 
 
 def get_marcxml_for_doi(doi):
-    """
-    Get MARCXML format querying Crossref.
+    """Get MARCXML format querying Crossref.
 
     Attaches parameters: email, doi and redirect.
     Returns the MARCXML code or throws an exception, when
