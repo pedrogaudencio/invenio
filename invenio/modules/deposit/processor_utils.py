@@ -291,12 +291,3 @@ def record_id_process(form, field, submit=False):
         form.process(MultiDict(webdeposit_json))
     else:
         field.add_message("Record doesn't exist", state='info')
-
-
-def etree_to_dict(tree):
-    """Translate etree into dictionary."""
-    d = {tree.tag.split('}')[1]: map(
-        etree_to_dict, tree.iterchildren()
-        ) or tree.text}
-
-    return d
