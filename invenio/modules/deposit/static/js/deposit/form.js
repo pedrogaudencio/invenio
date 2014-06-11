@@ -1092,6 +1092,10 @@ var DEPOSIT_FORM = (function( $ ){
       if (options.prefix === null) {
           options.prefix = this.attr('id');
       }
+
+      // the element to which fieldlist is applied
+      var $element = $(this);
+
       var template = this.find('.' + options.empty_cssclass);
       var last_index = $("#" + options.prefix + options.sep +  options.last_index);
       var field_regex = new RegExp("(" + options.prefix + options.sep + "(\\d+|" + options.index_suffix + "))"+ options.sep +"(.+)");
@@ -1202,6 +1206,25 @@ var DEPOSIT_FORM = (function( $ ){
           }
       };
 
+      /**
+       * Sets elements values for a row.
+       *
+       * @param index index of the row o modify
+       * @param values dictionary where keys are columns identifiers,
+       *  and values are the values to set like:
+       *  {
+       *    name: 'name',
+       *    affiliation: 'affiliation'
+       *  }
+       */
+      var set_element_values = function(index, values) {
+        var $row_to_update = $($element.find('.field-list-element')[index])
+        $.each(values, function(key, value) {
+          var $input_field = $row_to_update.find('*[id$="' + key  + '"]');
+          $input_field.val(value);
+        });
+      };
+
       var get_field_name = function(name_or_id) {
           result = field_regex.exec(name_or_id);
           if(result !== null){
@@ -1269,7 +1292,7 @@ var DEPOSIT_FORM = (function( $ ){
       /**
        * Handler for add new element events
        */
-      var append_element = function (data, field_prefix_index){
+      var append_element = function (){
           //
           // Append action
           //
@@ -1278,8 +1301,6 @@ var DEPOSIT_FORM = (function( $ ){
           // Remove class
           new_element.removeClass(options.empty_cssclass);
           new_element.addClass(options.element_css_class);
-          // Pre-populate field values
-          update_element_values(new_element, data, field_prefix_index);
           // Update ids
           update_element_index(new_element, next_index);
           // Insert before template element
@@ -1379,6 +1400,8 @@ var DEPOSIT_FORM = (function( $ ){
       return {
           append_element: append_element,
           update_element: update_element,
+          get_next_index: get_next_index,
+          set_element_values: set_element_values,
           options: options,
       };
   };
@@ -1436,6 +1459,7 @@ var DEPOSIT_FORM = (function( $ ){
     submit: submit,
     typeahead_selection: typeahead_selection,
     unique_id: unique_id,
+    field_lists: field_lists,
   };
 
 }( window.jQuery ));
