@@ -22,7 +22,7 @@
 import os
 import glob
 import traceback
-
+from ..utils import pass_properties_to_closure
 from six import callable
 
 
@@ -43,7 +43,10 @@ def approve_record(obj, eng):
 
 
 def convert_record_to_bibfield(obj, eng):
-    """Convert a record in data into a 'dictionary' thanks to BibField.
+    """Convert to record from MARCXML.
+
+    Expecting MARCXML, this task converts it using the current configuration to a
+    SmartJSON object.
 
     :param obj: Bibworkflow Object to process
     :param eng: BibWorkflowEngine processing the object
@@ -52,7 +55,10 @@ def convert_record_to_bibfield(obj, eng):
     obj.data = convert_marcxml_to_bibfield(obj.data)
     eng.log.info("Field conversion succeeded")
 
+convert_record_to_bibfield.description = 'Get Record from MARCXML'
 
+
+@pass_properties_to_closure
 def get_files_list(path, parameter):
     """Function returning the list of file in a directory."""
     def _get_files_list(obj, eng):
@@ -71,6 +77,7 @@ def get_files_list(path, parameter):
     return _get_files_list
 
 
+@pass_properties_to_closure
 def set_obj_extra_data_key(key, value):
     """Task setting the value of an object extra data key."""
     def _set_obj_extra_data_key(obj, eng):
@@ -87,6 +94,7 @@ def set_obj_extra_data_key(key, value):
     return _set_obj_extra_data_key
 
 
+@pass_properties_to_closure
 def get_obj_extra_data_key(name):
     """Task returning the value of an object extra data key."""
     def _get_obj_extra_data_key(obj, eng):
@@ -95,6 +103,7 @@ def get_obj_extra_data_key(name):
     return _get_obj_extra_data_key
 
 
+@pass_properties_to_closure
 def get_eng_extra_data_key(name):
     """Task returning the value of an engine extra data key."""
     def _get_eng_extra_data_key(obj, eng):
@@ -108,8 +117,9 @@ def get_data(obj, eng):
     return obj.data
 
 
+@pass_properties_to_closure
 def convert_record(stylesheet="oaidc2marcxml.xsl"):
-    """Convert the object data, if XML, using the given stylesheet.
+    """Convert the object data to marcxml using the given stylesheet.
 
     :param stylesheet: which stylesheet to use
     :return: function to convert record
@@ -138,9 +148,11 @@ def convert_record(stylesheet="oaidc2marcxml.xsl"):
                                 id_workflow=eng.uuid,
                                 id_object=obj.id)
 
+    _convert_record.description = 'Convert record'
     return _convert_record
 
 
+@pass_properties_to_closure
 def update_last_update(repository_list):
     """Perform the update of the update date."""
     from invenio.legacy.oaiharvest.dblayer import update_lastrun
@@ -231,6 +243,7 @@ def quick_match_record(obj, eng):
     return False
 
 
+@pass_properties_to_closure
 def upload_record(mode="ir"):
     """Perform the upload step."""
     def _upload_record(obj, eng):

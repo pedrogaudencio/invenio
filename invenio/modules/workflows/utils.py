@@ -387,6 +387,42 @@ def get_action_list(object_list):
     return action_dict
 
 
+def pass_properties_to_closure(func):
+    """Pass properties to inner function.
+
+    Used by ``workflows`` tasks to make function closures "inherit" the same properties
+    as the parent function in order to properly display it in the Holding Pen interface.
+
+    This function can be used as decorator to copy the properties (docstring, name etc.) to
+    the inner function when creating closures.
+
+    .. code-block:: python
+
+        @pass_properties_to_closure
+        def foo(a):
+            '''Some docs.'''
+            def _foo(b, c):
+                return a + b + c
+            return _foo
+
+    Now `_foo` will have the name `foo` and same docs.
+    """
+    def new_function(*args, **kwds):
+        inner_func = func(*args, **kwds)
+        if callable(inner_func):
+            inner_func.func_name = func.func_name
+            inner_func.func_doc = func.func_doc
+            inner_func.func_dict.update(func.func_dict)
+            return inner_func
+        else:
+            return func
+    # Keeps func's properties
+    new_function.func_name = func.func_name
+    new_function.func_doc = func.func_doc
+    new_function.func_dict.update(func.func_dict)
+    return new_function
+
+
 def get_rendered_task_results(obj):
     """Return a list of rendered results from BibWorkflowObject task results."""
     from flask import render_template
@@ -421,3 +457,41 @@ def get_previous_next_objects(object_list, current_object_id):
         next_object_id = object_list[0]
         previous_object_id = None
     return previous_object_id, next_object_id
+
+
+def get_func_info(func):
+    """Retrieve a function's information."""
+    name = func.func_name
+    doc = func.func_doc
+    try:
+        nicename = func.description
+    except AttributeError:
+        if doc:
+            nicename = doc.split('\n')[0]
+            if len(nicename) > 80:
+                nicename = name
+        else:
+            nicename = name
+    parameters = []
+    closure = func.func_closure
+    varnames = func.func_code.co_freevars
+    if closure:
+        for index, arg in enumerate(closure):
+            parameters.append((str(varnames[index]), str(arg.cell_contents)))
+    return {
+        "nicename": nicename,
+        "doc": doc,
+        "parameters": parameters,
+        "name": name
+    }
+
+
+def get_workflow_info(func_list):
+    """Return function info, go through lists recursively."""
+    funcs = []
+    for item in func_list:
+        if isinstance(item, list):
+            funcs.append(get_workflow_info(item))
+        else:
+            funcs.append(get_func_info(item))
+    return funcs

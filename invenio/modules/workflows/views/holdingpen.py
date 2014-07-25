@@ -105,9 +105,10 @@ def maintable():
 @login_required
 def details(objectid):
     """Display info about the object."""
+    from ..utils import get_workflow_info
+    from invenio.ext.sqlalchemy import db
     of = "hd"
     bwobject = BibWorkflowObject.query.get(objectid)
-    from invenio.ext.sqlalchemy import db
     if 'holdingpen_current_ids' in session:
         objects = session['holdingpen_current_ids']
     else:
@@ -134,7 +135,6 @@ def details(objectid):
             db.or_(BibWorkflowObject.id_parent == bwobject.id_parent,
                    BibWorkflowObject.id == bwobject.id_parent,
                    BibWorkflowObject.id == bwobject.id)).all()
-
     else:
         hbwobject_db_request = BibWorkflowObject.query.filter(
             db.or_(BibWorkflowObject.id_parent == bwobject.id,
@@ -165,6 +165,10 @@ def details(objectid):
 
     results = get_rendered_task_results(bwobject)
 
+    workflow_definition = extracted_data['workflow_func']
+    workflow_definition = get_workflow_info(workflow_definition)
+    task_history = bwobject.get_extra_data().get('_task_history', [])
+
     return render_template('workflows/hp_details.html',
                            bwobject=bwobject,
                            rendered_actions=rendered_actions,
@@ -173,11 +177,13 @@ def details(objectid):
                            info=extracted_data['info'],
                            log=extracted_data['logtext'],
                            data_preview=formatted_data,
-                           workflow_func=extracted_data['workflow_func'],
                            workflow=extracted_data['w_metadata'],
                            task_results=results,
                            previous_object=previous_object,
-                           next_object=next_object)
+                           next_object=next_object,
+                           task_history=task_history,
+                           workflow_definition=workflow_definition,
+                           versions=ObjectVersion)
 
 
 @blueprint.route('/files/<int:objectid>/<path:filename>',
@@ -380,6 +386,7 @@ def load_table():
         mini_action = None
         if action:
             mini_action = getattr(action, "render_mini", None)
+
         extra_data = bwo.get_extra_data()
         record = bwo.get_data()
 
