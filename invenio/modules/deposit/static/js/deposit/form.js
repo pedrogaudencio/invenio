@@ -87,6 +87,11 @@ define(function(require, exports, module) {
    */
   function json_options(settings){
       // Perform AJAX request with JSON data.
+      console.log("url: " + settings.url);
+      if (settings.url.substr(-11) === "_edit?all=1") {
+        settings.url = settings.url.substr(0, settings.url.length-11) + "edit?all=1";
+      }
+      console.log("url: " + settings.url);
       return {
           url: settings.url,
           type: 'POST',

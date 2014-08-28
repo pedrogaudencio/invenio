@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-##
+{#
 ## This file is part of Invenio.
 ## Copyright (C) 2014 CERN.
 ##
@@ -10,15 +9,17 @@
 ##
 ## Invenio is distributed in the hope that it will be useful, but
 ## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 ## General Public License for more details.
 ##
 ## You should have received a copy of the GNU General Public License
 ## along with Invenio; if not, write to the Free Software Foundation, Inc.,
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+#}
+{% extends "deposit/form_base.html" %}
 
-from __future__ import print_function, absolute_import
-from .simplerecord import SimpleRecordDeposition
-from .editablerecord import EditableRecordDeposition
+{% block form_action_bar %}
+{% include "deposit/edit_action_bar.html" %}
+{% endblock %}
 
-__all__ = ['SimpleRecordDeposition', 'EditableRecordDeposition']
+{% block instructions %}Instructions: (i) Press "Save" to save your upload for editing later, as many times you like. (ii) When ready, press "Submit" to finalize your changes. (iii) Press "Discard" to discard your changes. {% endblock %}
