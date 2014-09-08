@@ -41,11 +41,13 @@ from .helpers import record_to_draft, make_record, \
     deposition_record
 from invenio.legacy.bibdocfile.api import BibRecDocs
 from invenio.modules.pidstore.models import PersistentIdentifier
+from invenio.modules.workflows.utils import pass_properties_to_closure
 
 
 #
 # Helpers
 #
+@pass_properties_to_closure
 def filter_empty_helper(keys=None):
     """Remove empty elements from a list."""
     def _inner(elem):
@@ -95,6 +97,7 @@ def is_sip_uploaded(sip, record=None):
         return True
 
 
+@pass_properties_to_closure
 def authorize_user(action, **params):
     """Check if current user is authorized to perform the action."""
     def _authorize_user(obj, dummy_eng):
@@ -112,6 +115,7 @@ def authorize_user(action, **params):
     return _authorize_user
 
 
+@pass_properties_to_closure
 def prefill_draft(draft_id='_default', clear=True):
     """Fill draft values with values from pre-filled cache."""
     def _prefill_draft(obj, eng):
@@ -124,6 +128,7 @@ def prefill_draft(draft_id='_default', clear=True):
     return _prefill_draft
 
 
+@pass_properties_to_closure
 def render_form(draft_id='_default'):
     """Render a form if the draft associated with it has not yet been completed.
 
@@ -181,6 +186,7 @@ def render_form(draft_id='_default'):
     return _render_form
 
 
+@pass_properties_to_closure
 def load_record(draft_id='_default', producer='json_for_form',
                 pre_process=None, post_process=None):
     """Load a record and map to draft data."""
@@ -261,6 +267,7 @@ def merge_changes(deposition, dest, a, b):
     return dictdiffer.patch(patch, dest)
 
 
+@pass_properties_to_closure
 def merge_record(draft_id='_default', pre_process_load=None,
                  post_process_load=None, process_export=None,
                  merge_func=merge_changes):
@@ -335,6 +342,7 @@ def merge_record(draft_id='_default', pre_process_load=None,
     return _merge_record
 
 
+@pass_properties_to_closure
 def create_recid():
     """Create a new record id."""
     def _create_recid(obj, dummy_eng):
@@ -350,6 +358,7 @@ def create_recid():
     return _create_recid
 
 
+@pass_properties_to_closure
 def mint_pid(pid_field='doi', pid_creator=None, pid_store_type='doi',
              existing_pid_checker=None):
     """Register a persistent identifier internally.
@@ -398,6 +407,7 @@ def mint_pid(pid_field='doi', pid_creator=None, pid_store_type='doi',
     return _mint_pid
 
 
+@pass_properties_to_closure
 def process_bibdocfile(process=None):
     """Process bibdocfiles with custom processor."""
     def _bibdocfile_update(obj, eng):
@@ -412,6 +422,7 @@ def process_bibdocfile(process=None):
     return _bibdocfile_update
 
 
+@pass_properties_to_closure
 def prepare_sip():
     """Prepare a submission information package."""
     def _prepare_sip(obj, dummy_eng):
@@ -432,6 +443,7 @@ def prepare_sip():
     return _prepare_sip
 
 
+@pass_properties_to_closure
 def process_sip_metadata(processor=None):
     """Process metadata in submission information package using a custom processor."""
     def _process_sip(obj, dummy_eng):
@@ -447,6 +459,7 @@ def process_sip_metadata(processor=None):
     return _process_sip
 
 
+@pass_properties_to_closure
 def finalize_record_sip(is_dump=True):
     """Finalize the SIP by generating the MARC and storing it in the SIP."""
     def _finalize_sip(obj, dummy_eng):
@@ -459,6 +472,7 @@ def finalize_record_sip(is_dump=True):
     return _finalize_sip
 
 
+@pass_properties_to_closure
 def hold_for_approval():
     """Hold deposition on the Holding Pen for admin approval."""
     def _hold_for_approval(obj, dummy_eng):
@@ -469,6 +483,7 @@ def hold_for_approval():
     return _hold_for_approval
 
 
+@pass_properties_to_closure
 def upload_record_sip():
     """Generate the record from marc.
 
