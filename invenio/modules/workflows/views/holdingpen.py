@@ -37,6 +37,7 @@ from flask.ext.menu import register_menu
 
 from invenio.base.decorators import templated, wash_arguments
 from invenio.base.i18n import _
+from invenio.ext.principal import permission_required
 from invenio.utils.date import pretty_date
 
 from ..models import BibWorkflowObject, Workflow, ObjectVersion
@@ -78,6 +79,7 @@ def index():
 @blueprint.route('/maintable', methods=['GET', 'POST'])
 @register_breadcrumb(blueprint, '.records', _('Records'))
 @login_required
+@permission_required("viewholdingpen")
 @templated('workflows/hp_maintable.html')
 def maintable():
     """Display main table interface of Holdingpen."""
@@ -103,6 +105,7 @@ def maintable():
 @blueprint.route('/details/<int:objectid>', methods=['GET', 'POST'])
 @register_breadcrumb(blueprint, '.details', _("Record Details"))
 @login_required
+@permission_required("viewholdingpen")
 def details(objectid):
     """Display info about the object."""
     from ..utils import get_workflow_info
@@ -189,6 +192,7 @@ def details(objectid):
 @blueprint.route('/files/<int:object_id>/<path:filename>',
                  methods=['POST', 'GET'])
 @login_required
+@permission_required("viewholdingpen")
 def get_file_from_task_result(object_id=None, filename=None):
     """Send the requested file to user from a workflow task result.
 
@@ -213,6 +217,7 @@ def get_file_from_task_result(object_id=None, filename=None):
 
 @blueprint.route('/restart_record', methods=['GET', 'POST'])
 @login_required
+@permission_required("viewholdingpen")
 @wash_arguments({'objectid': (int, 0)})
 def restart_record(objectid, start_point='continue_next'):
     """Restart the initial object in its workflow."""
@@ -227,6 +232,7 @@ def restart_record(objectid, start_point='continue_next'):
 
 @blueprint.route('/continue_record', methods=['GET', 'POST'])
 @login_required
+@permission_required("viewholdingpen")
 @wash_arguments({'objectid': (int, 0)})
 def continue_record(objectid):
     """Continue workflow for current object."""
@@ -236,6 +242,7 @@ def continue_record(objectid):
 
 @blueprint.route('/restart_record_prev', methods=['GET', 'POST'])
 @login_required
+@permission_required("viewholdingpen")
 @wash_arguments({'objectid': (int, 0)})
 def restart_record_prev(objectid):
     """Restart the last task for current object."""
@@ -245,6 +252,7 @@ def restart_record_prev(objectid):
 
 @blueprint.route('/delete', methods=['GET', 'POST'])
 @login_required
+@permission_required("viewholdingpen")
 @wash_arguments({'objectid': (int, 0)})
 def delete_from_db(objectid):
     """Delete the object from the db."""
@@ -254,6 +262,7 @@ def delete_from_db(objectid):
 
 @blueprint.route('/delete_multi', methods=['GET', 'POST'])
 @login_required
+@permission_required("viewholdingpen")
 @wash_arguments({'bwolist': (text_type, "")})
 def delete_multi(bwolist):
     """Delete list of objects from the db."""
@@ -267,6 +276,7 @@ def delete_multi(bwolist):
 
 @blueprint.route('/resolve', methods=['GET', 'POST'])
 @login_required
+@permission_required("viewholdingpen")
 @wash_arguments({'objectid': (text_type, '-1')})
 def resolve_action(objectid):
     """Resolve the action taken.
@@ -282,6 +292,7 @@ def resolve_action(objectid):
 
 @blueprint.route('/entry_data_preview', methods=['GET', 'POST'])
 @login_required
+@permission_required("viewholdingpen")
 @wash_arguments({'objectid': (text_type, '0'),
                  'of': (text_type, None)})
 def entry_data_preview(objectid, of):
@@ -296,6 +307,7 @@ def entry_data_preview(objectid, of):
 
 @blueprint.route('/get_context', methods=['GET', 'POST'])
 @login_required
+@permission_required("viewholdingpen")
 def get_context():
     """Return the a JSON structure with URL maps and actions."""
     context = {}
@@ -313,6 +325,7 @@ def get_context():
 
 @blueprint.route('/load_table', methods=['GET', 'POST'])
 @login_required
+@permission_required("viewholdingpen")
 @templated('workflows/hp_maintable.html')
 def load_table():
     """Get JSON data for the Holdingpen table.
