@@ -24,6 +24,7 @@ import random
 import re
 
 from invenio.base.globals import cfg
+from invenio.modules.workflows.utils import pass_properties_to_closure
 
 
 REGEXP_AUTHLIST = re.compile(
@@ -33,6 +34,7 @@ REGEXP_REFS = re.compile(
     re.DOTALL)
 
 
+@pass_properties_to_closure
 def post_process_selected(post_process):
     """Check if post process is selected."""
     def _post_process_selected(obj, eng):
@@ -49,6 +51,7 @@ def post_process_selected(post_process):
     return _post_process_selected
 
 
+@pass_properties_to_closure
 def convert_record_with_repository(stylesheet="oaidc2marcxml.xsl"):
     """Convert a MARC record to another one thanks to the stylesheet.
 
@@ -157,6 +160,7 @@ def arxiv_fulltext_download(obj, eng):
                      "perhaps a duplicate task in you workflow.")
 
 
+@pass_properties_to_closure
 def plot_extract(plotextractor_types=("latex",)):
     """Perform the plotextraction step.
 
@@ -435,8 +439,7 @@ def author_list(obj, eng):
 
 
 def upload_step(obj, eng):
-    """
-    Perform the upload step.
+    """Perform the upload step.
 
     :param obj: BibWorkflowObject to process
     :param eng: BibWorkflowEngine processing the object
