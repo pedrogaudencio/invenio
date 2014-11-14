@@ -109,7 +109,8 @@ define(function(require, exports, module) {
         });
       }
       var fields = $(selector).serializeArray(),
-          $pluploader = $(this.attr.pluploaderClass);
+          $pluploader = $(this.attr.pluploaderClass),
+          $checkboxes = $('input[type=checkbox]:not(:checked)');
 
       if ( $pluploader.length ) {
         // There is a pluploader instance in the form
@@ -117,6 +118,15 @@ define(function(require, exports, module) {
           name: 'files',
           value: $pluploader.data('pluploadWidget').val()
         });
+      }
+
+      if ( $checkboxes.length ) {
+        fields = fields.concat(
+          $checkboxes.map(
+              function() {
+                return {name: this.name, value: ''}
+              }).get()
+        );
       }
       return serialize_object(fields);
   }
@@ -586,6 +596,16 @@ define(function(require, exports, module) {
           }
   }
 
+  this.onCheckboxChanged = function (event) {
+    if(event.target.name.indexOf('__input__') == -1){
+      if ( $(event.target).prop("checked") ) {
+        save_field(this.attr.save_url, event.target.name, event.target.value);
+      } else {
+        save_field(this.attr.save_url, event.target.name, '');
+      }
+    }
+  }
+
   /**
    * Click form-button
    */
@@ -768,7 +788,8 @@ define(function(require, exports, module) {
     });
 
     this.on(this.attr.formSelector + ' .form-button', "click", this.onButtonClick);
-    this.on('#submitForm input, #submitForm textarea, #submitForm select', "change", this.onFieldChanged);
+    this.on('#submitForm input[type!=checkbox], #submitForm textarea, #submitForm select', "change", this.onFieldChanged);
+    this.on('#submitForm input[type=checkbox]', 'change', this.onCheckboxChanged);
 
     init_autocomplete('[data-autocomplete="1"]', this.attr.save_url, this.attr.autocomplete_url);
     init_field_lists(this.attr.formSelector + ' .dynamic-field-list', this.attr.save_url, '[data-autocomplete="1"]', this.attr.autocomplete_url);
