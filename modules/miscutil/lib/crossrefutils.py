@@ -183,6 +183,32 @@ def get_doi_for_records(records):
     return dois
 
 
+def get_metadata_for_doi(doi):
+    """Query CrossRef with doi.
+
+    return JSON metadata"""
+    import requests
+    from urlparse import urljoin
+    while True:
+        try:
+            url = urljoin(
+                    "http://api.crossref.org/works/",
+                    "{term}".format(term=doi.strip()),
+                )
+            response = requests.get(url)
+        except requests.exceptions.ConnectionError:
+            sleep(0.5)
+            continue
+        break
+    if not response.ok:
+        metadata = {}
+    else:
+        json_data = response.json()
+        metadata = json_data.get('message')
+
+    return metadata
+
+
 def get_metadata_for_dois(dois):
     """
     Get the metadata associated with
