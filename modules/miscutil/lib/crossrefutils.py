@@ -227,20 +227,23 @@ def get_metadata_for_dois(dois):
         url = "http://doi.crossref.org/servlet/query"
         data = urllib.urlencode(params)
 
-        for line in CROSSREF_OPENER.open(url, data):
-            line = line.split("|")
-            if len(line) == 1:
-                pass
-            elif len(line) in (10, 12):
-                is_book = len(line) == 12
-                if is_book:
-                    record_data = dict(zip(FIELDS_BOOK, line))
+        try:
+            for line in CROSSREF_OPENER.open(url, data):
+                line = line.split("|")
+                if len(line) == 1:
+                    pass
+                elif len(line) in (10, 12):
+                    is_book = len(line) == 12
+                    if is_book:
+                        record_data = dict(zip(FIELDS_BOOK, line))
+                    else:
+                        record_data = dict(zip(FIELDS_JOURNAL, line))
+                    record_data["is_book"] = is_book
+                    metadata[record_data["doi"]] = record_data
                 else:
-                    record_data = dict(zip(FIELDS_JOURNAL, line))
-                record_data["is_book"] = is_book
-                metadata[record_data["doi"]] = record_data
-            else:
-                raise CrossrefError("Crossref response not understood")
+                    raise CrossrefError("Crossref response not understood")
+        except urllib2.HTTPError:
+            raise CrossrefError("Crossref response not understood")
 
     return metadata
 
