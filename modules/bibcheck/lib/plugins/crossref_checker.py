@@ -160,23 +160,27 @@ def compare_metadata(metadata, rec):
 
     # Check page number
     page_crossref = metadata.get("page")
-    page_record = get_value(rec, "773__c")
-    if page_record is not None and page_crossref is not None:
-        page_record_lower = page_record.split("-")[0].lower()
-        page_crossref_lower = str(page_crossref.lower()).split("-")[0]
-        if page_record_lower != page_crossref_lower and \
-                page_record_lower.find(page_crossref_lower) != 1:
-            # ignores proceedings
-            if not (page_record_lower.startswith("pp.") and
-                    page_record_lower[3:].strip() != page_crossref_lower):
-                confidence_different += 5
-                msgs.append(msg_tpl.format("page number (773__c)",
-                                           page_crossref,
-                                           page_record))
-                log_msgs.append("<h5>page number (773__c)</h5>"
-                                "<code>recd page number: {0}</code><br>\n"
-                                "<code>cref page number: {1}</code><br>\n".format(page_record,
-                                                                                  page_crossref))
+    pages_record = get_values(rec, "773__c")
+    if len(pages_record) and page_crossref is not None:
+        different_pages = 0
+        for page_record in pages_record:
+            page_record_lower = page_record.split("-")[0].lower()
+            page_crossref_lower = str(page_crossref.lower()).split("-")[0]
+            if page_record_lower != page_crossref_lower and \
+                    page_record_lower.find(page_crossref_lower) != 1:
+                # ignores proceedings
+                if not (page_record_lower.startswith("pp.") and
+                        page_record_lower[3:].strip() != page_crossref_lower):
+                    different_pages += 1
+        if different_pages == len(pages_record):
+            confidence_different += 5
+            msgs.append(msg_tpl.format("page number (773__c)",
+                                       page_crossref,
+                                       page_record))
+            log_msgs.append("<h5>page number (773__c)</h5>"
+                            "<code>recd page number: {0}</code><br>\n"
+                            "<code>cref page number: {1}</code><br>\n".format(pages_record,
+                                                                              page_crossref))
 
     # Check author
     author_crossref = ', '.join(filter(None,
@@ -227,44 +231,52 @@ def compare_metadata(metadata, rec):
     # Check year
     year_crossref = str(metadata.get("issued").get("date-parts")[0][0]) if \
         isinstance(metadata.get("issued").get("date-parts"), list) else None
-    year_record = get_value(rec, "773__y")
-    if year_crossref is not None and year_record is not None and \
-            year_crossref.lower() != year_record.lower():
-        confidence_different += 2
-        msgs.append(msg_tpl.format("year (773__y)",
-                                   year_crossref,
-                                   year_record))
-        log_msgs.append("<h5>year (773__y)</h5>\n"
-                        "<code>recd year: {0}</code><br>\n"
-                        "<code>cref year: {1}</code><br>\n".format(year_record,
-                                                                   year_crossref))
+    years_record = get_values(rec, "773__y")
+    different_years = 0
+    if year_crossref is not None and len(years_record):
+        for year_record in years_record:
+            if year_crossref.lower() != year_record.lower():
+                different_years += 1
+        if different_years == len(years_record):
+            confidence_different += 2
+            msgs.append(msg_tpl.format("year (773__y)",
+                                       year_crossref,
+                                       year_record))
+            log_msgs.append("<h5>year (773__y)</h5>\n"
+                            "<code>recd year: {0}</code><br>\n"
+                            "<code>cref year: {1}</code><br>\n".format(years_record,
+                                                                       year_crossref))
 
     # Check volume
     volume_crossref = metadata.get("volume")
-    volume_record = get_value(rec, "773__v")
-    if volume_crossref is not None and volume_record is not None:
-        volume_record_lower = volume_record.lower()
-        volume_crossref_lower = str(volume_crossref.lower())
-        volume_crossref_extra_lower = volume_extra.lower() + volume_crossref.lower()
-        try:
-            if volume_crossref_lower != volume_record_lower and \
-                    volume_crossref_extra_lower != volume_record_lower and \
-                    (volume_record_lower.find(volume_crossref_lower) != 1 and
-                     volume_crossref_lower.find(volume_record_lower) != 1) and \
-                    volume_crossref_lower[2:] != volume_record_lower[:2] and \
-                    int(volume_record_lower[:2]) > 12:
-                confidence_different += 2
-                msgs.append(msg_tpl.format("volume (773__v)",
-                                           volume_crossref,
-                                           volume_record))
-                log_msgs.append("<h5>volume (773__v)</h5>\n"
-                                "<code>recd volume: {0}</code><br>\n"
-                                "<code>cref volume: {1}</code><br>\n".format(volume_record,
-                                                                             volume_crossref))
-        except ValueError:
-            pass
+    volumes_record = get_values(rec, "773__v")
+    if len(volumes_record) and volume_crossref is not None:
+        different_volumes = 0
+        for volume_record in volumes_record:
+            volume_record_lower = volume_record.lower()
+            volume_crossref_lower = str(volume_crossref.lower())
+            volume_crossref_extra_lower = volume_extra.lower() + volume_crossref.lower()
+            try:
+                if volume_crossref_lower != volume_record_lower and \
+                        volume_crossref_extra_lower != volume_record_lower and \
+                        (volume_record_lower.find(volume_crossref_lower) != 1 and
+                         volume_crossref_lower.find(volume_record_lower) != 1) and \
+                        volume_crossref_lower[2:] != volume_record_lower[:2] and \
+                        int(volume_record_lower[:2]) > 12:
+                    different_volumes += 1
+            except ValueError:
+                pass
+        if different_volumes == len(volumes_record):
+            confidence_different += 2
+            msgs.append(msg_tpl.format("volume (773__v)",
+                                       volume_crossref,
+                                       volume_record))
+            log_msgs.append("<h5>volume (773__v)</h5>\n"
+                            "<code>recd volume: {0}</code><br>\n"
+                            "<code>cref volume: {1}</code><br>\n".format(volumes_record,
+                                                                         volume_crossref))
 
-    # # DEBUG:
+    # DEBUG:
     if log_msgs:
         record_link = '<h4><a href="http://inspirehep.net/record/{0}" target="_blank">Record {0}</a></h4>\n'
         log_msgs.insert(0, record_link.format(rec.record_id))
@@ -272,7 +284,7 @@ def compare_metadata(metadata, rec):
 
     if confidence_different > 4:
         rec.warn(msgs)
-        # # # DEBUG:
+        # DEBUG:
         for msg in log_msgs:
             print msg
 
@@ -284,9 +296,10 @@ def check_records(records, doi_field="0247_a"):
     """
     records_to_check = {}
     for record in records:
-        # TODO: check only the 0247_a__2 DOI
-        for _, doi in record.iterfield(doi_field):
-            records_to_check[doi] = record
+        # ignores the CURATOR flag
+        if 'CURATOR' not in [flag for _, flag in record.iterfield("0247_9")]:
+            for _, doi in record.iterfield(doi_field):
+                records_to_check[doi] = record
 
     for doi in records_to_check.keys():
         if doi != "" and is_doi(doi):
